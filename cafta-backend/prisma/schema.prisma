@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum MidiaTipo {
+  imagens
+  videos
+  artigos
+}
+
+enum MidiaStatus {
+  ativo
+  inativo
+  processando
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+/// Metadados de cada arquivo de mídia.
+/// O binário nunca entra no banco — fica no Cloudflare R2.
+/// pathRelativo é o key interno do bucket (ex: "imagens/uuid.jpg").
+/// thumbnailPath é a URL pública completa da thumbnail no R2.
+model Midia {
+  id                String      @id @default(uuid()) @db.Uuid
+  titulo            String
+  tipo              MidiaTipo
+  filename          String      @unique            // nome no R2 (uuid.ext)
+  filenameOriginal  String                         // nome enviado pelo usuário
+  mimetype          String
+  tamanhoBytes      BigInt
+  pathRelativo      String                         // key no R2, ex: imagens/abc.jpg
+  thumbnailPath     String?                        // URL pública da thumb no R2
+  status            MidiaStatus @default(ativo)
+  criadoEm         DateTime    @default(now())
+  atualizadoEm     DateTime    @updatedAt
+
+  @@index([tipo])
+  @@index([status])
+  @@index([criadoEm(sort: Desc)])
+  @@map("midias")
+}
+
+/// Produções acadêmicas do curso.
+/// autores é um array de strings salvo como Json (jsonb no Postgres).
+model Pesquisa {
+  id           String   @id @default(uuid()) @db.Uuid
+  titulo       String
+  autores      Json     @default("[]")             // string[]
+  ano          Int
+  link         String?
+  destaque     Boolean  @default(false)
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([ano(sort: Desc)])
+  @@index([destaque])
+  @@map("pesquisas")
+}
