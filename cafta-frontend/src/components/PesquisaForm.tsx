@@ -6,13 +6,23 @@ interface PesquisaFormProps {
   onSubmitSuccess?: (pesquisa: Pesquisa) => void
 }
 
+type PesquisaFormState = {
+  id?: string
+  title: string
+  authors: string
+  year: number
+  link: string
+  destaque: boolean
+}
+
 export default function PesquisaForm({
   initialData,
   onSubmitSuccess,
 }: PesquisaFormProps) {
-  const [formData, setFormData] = useState<Omit<Pesquisa, 'id'>>(() => {
+  const [formData, setFormData] = useState<PesquisaFormState>(() => {
     if (initialData) {
       return {
+        id: initialData.id,
         title: initialData.title,
         authors: initialData.autores.join(', '),
         year: initialData.ano,
@@ -28,7 +38,7 @@ export default function PesquisaForm({
       destaque: false,
     }
   })
-  const [errors, setErrors] = useState<Partial<Omit<Pesquisa, 'id'>>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof PesquisaFormState, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   // Handle form changes
@@ -47,7 +57,7 @@ export default function PesquisaForm({
 
   // Validate form data
   const validate = (): boolean => {
-    const newErrors: Partial<Omit<Pesquisa, 'id'>> = {}
+    const newErrors: Partial<Record<keyof PesquisaFormState, string>> = {}
     const currentYear = new Date().getFullYear()
 
     // Title validation
@@ -109,13 +119,14 @@ export default function PesquisaForm({
       // Prepare data for submission
       const pesquisaData: Omit<Pesquisa, 'id'> = {
         title: formData.title.trim(),
-        authors: formData.authors
+        autores: formData.authors
           .split(',')
           .map((author) => author.trim())
           .filter((author) => author.length > 0),
-        year: parseInt(formData.year.toString()),
+        ano: parseInt(formData.year.toString()),
         link: formData.link.trim() || undefined,
         destaque: formData.destaque,
+        titulo: ''
       }
 
       // For create, generate a mock ID (in real app, this would come from backend)

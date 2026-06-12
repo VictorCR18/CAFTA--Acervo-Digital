@@ -53,7 +53,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UploadRes
     const filePath = path.join(uploadDir, filename)
 
     const bytes = await arquivo.arrayBuffer()
-    await fs.writeFile(filePath, Buffer.from(bytes))
+    await fs.writeFile(filePath, new Uint8Array(bytes))
 
     const fileUrl = `/uploads/${tipoKey}/pending/${filename}`
 

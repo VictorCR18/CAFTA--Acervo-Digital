@@ -54,9 +54,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             uploadTimestamp: parseInt(timestamp)
           })
         }
-      } catch (err) {
+      } catch (err: unknown) {
         // Directory might not exist yet, that's OK
-        if (err.code !== 'ENOENT') {
+        const errorCode =
+          typeof err === 'object' && err !== null && 'code' in err
+            ? (err as { code: unknown }).code
+            : undefined
+
+        if (errorCode !== 'ENOENT') {
           console.error(`[admin/upload] Error reading ${tipo} directory:`, err)
         }
       }

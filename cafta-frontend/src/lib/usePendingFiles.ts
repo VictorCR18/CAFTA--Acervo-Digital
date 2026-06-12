@@ -19,10 +19,10 @@ export function usePendingFiles() {
         // Transform mock data to match ArquivoAcervo format
         const transformedFiles: ArquivoAcervo[] = mockAcervoData.map(item => {
           // Map categoryId to ArquivoAcervo tipo
-          let tipo: ArquivoAcervo['tipo'] = item.categoryId as ArquivoAcervo['tipo']
-          if (tipo === 'documentos') {
-            tipo = 'artigos'
-          }
+          const categoryId = String(item.categoryId)
+          const tipo: ArquivoAcervo['tipo'] = categoryId === 'documentos'
+            ? 'artigos'
+            : (item.categoryId as ArquivoAcervo['tipo'])
 
           // Extract filename from fileUrl
           const filename = item.fileUrl.split('/').pop() || ''
