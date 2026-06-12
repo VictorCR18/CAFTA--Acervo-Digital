@@ -1,16 +1,7 @@
-import fs from 'fs/promises'
-import path from 'path'
-import { env } from '../config/env'
-
 /**
- * Remove a file from disk given its relative path (e.g. "imagens/abc.webp").
- * Fails silently if the file doesn't exist — never throws.
+ * fileCleanup.ts — mantido para compatibilidade, mas não usado com R2.
+ * O storage agora é feito via Cloudflare R2 (src/config/r2.ts).
  */
-export async function deleteFile(relativePath: string): Promise<void> {
-  try {
-    const abs = path.join(env.UPLOAD_DIR, relativePath)
-    await fs.unlink(abs)
-  } catch {
-    // File already gone — that's fine
-  }
+export async function deleteFile(_relativePath: string): Promise<void> {
+  // No-op: arquivos são deletados do R2 via deleteFromR2() no controller
 }
