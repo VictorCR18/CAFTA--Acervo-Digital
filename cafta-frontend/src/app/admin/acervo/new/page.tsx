@@ -1,3 +1,5 @@
+"use client"
+
 import AcervoForm from '@/components/AcervoForm'
 
 export default function NewAcervoPage() {
