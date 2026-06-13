@@ -64,6 +64,27 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              <Link
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  try {
+                    await fetch('/api/admin/logout', {
+                      method: 'POST',
+                      credentials: 'include',
+                    })
+                    // Redirect to login after logout
+                    window.location.href = '/admin/login'
+                  } catch (error) {
+                    console.error('[AdminDashboard] Logout error:', error)
+                    // Still redirect to login even if logout fails
+                    window.location.href = '/admin/login'
+                  }
+                }}
+                className="text-sm font-medium text-white hover:text-cafta-gold"
+              >
+                Sair
+              </Link>
               <Link href="/" className="text-sm font-medium text-white hover:text-cafta-gold">
                 Voltar ao site
               </Link>

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function AdminLogin() {
@@ -124,8 +124,4 @@ export default function AdminLogin() {
       </div>
     </div>
   )
-}
-
-function useEffect(arg0: () => (() => void) | undefined, arg1: never[]) {
-  throw new Error('Function not implemented.')
 }
