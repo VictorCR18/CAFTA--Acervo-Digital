@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { CATEGORIAS_ACERVO } from '@/lib/constants'
 import type { CategoriaAcervo } from '@/types'
 import { usePendingFiles } from '@/lib/usePendingFiles'
+import { api } from '@/lib/api'
 
 interface PendingFile {
   id: string
@@ -44,45 +45,65 @@ export default function ModeracaoPage() {
     setErrorState(error)
   }, [pendingFiles, loading, error])
 
-  // Fetch pending files on mount - USING MOCK DATA FOR DEVELOPMENT
+  // Fetch pending files on mount - NOW USING REAL API
   useEffect(() => {
     // The hook already handles fetching, but we keep this for consistency
     // In a real app, this would trigger a refetch if needed
   }, [])
 
-  // Handle file approval - MOCK IMPLEMENTATION
+  // Handle file approval - NOW USING REAL API
   async function handleApprove(filename: string, tipo: string) {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Show loading state
+      setLoadingState(true)
 
-      // Optimistically update UI
+      // Call backend API to approve file (change status to 'ativo')
+      const response = await api.patch(`/api/midias/${filename}/status`, {
+        status: 'ativo'
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // Update UI optimistically
       setPendingFilesState(prev => prev.filter(file => file.id !== filename))
-      // Also update the hook's state (in a real app, this would come from backend)
-      // For now, we'll just update our local state
 
-      // Show success message (in a real app, you might use a toast)
+      // Show success message
       alert('Arquivo aprovado com sucesso!')
     } catch (err) {
       console.error('[ModeracaoPage] Error approving file:', err)
       alert(err instanceof Error ? err.message : 'Erro ao aprovar arquivo')
+    } finally {
+      setLoadingState(false)
     }
   }
 
-  // Handle file rejection - MOCK IMPLEMENTATION
+  // Handle file rejection - NOW USING REAL API
   async function handleReject(filename: string, tipo: string) {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Show loading state
+      setLoadingState(true)
 
-      // Optimistically update UI
+      // Call backend API to reject file (change status to 'inativo')
+      const response = await api.patch(`/api/midias/${filename}/status`, {
+        status: 'inativo'
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // Update UI optimistically
       setPendingFilesState(prev => prev.filter(file => file.id !== filename))
 
-      // Show success message (in a real app, you might use a toast)
+      // Show success message
       alert('Arquivo rejeitado com sucesso!')
     } catch (err) {
       console.error('[ModeracaoPage] Error rejecting file:', err)
       alert(err instanceof Error ? err.message : 'Erro ao rejeitar arquivo')
+    } finally {
+      setLoadingState(false)
     }
   }
 
@@ -210,7 +231,7 @@ export default function ModeracaoPage() {
                                   {/* Simple file icon - could be improved with actual icons */}
                                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M9 12h6m2 0a2 2 0 110-4m0 4a2 2 0 100-4m-6 8a2 2 0 110-4m0 4a2 2 0 100-4m-6 0a2 2 0 110-4m0 4a2 2 0 100-4m-6 0a2 2 0 110-4m0 4a2 2 0 100-4"/>
+                                          d="M9 12h6m2 0a2 2 0 110-4m0 4a2 2 0 100-4m-6 8a2 2 0 110-4m0 4a2 2 0 100-4m-6 0a2 2 0 110-4m0 4a2 2 0 110-4m0 4a2 2 0 110-4m0 4a2 2 0 100-4"/>
                                   </svg>
                                 </div>
                               )

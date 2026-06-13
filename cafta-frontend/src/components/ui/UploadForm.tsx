@@ -4,13 +4,14 @@ import { useState, useRef } from 'react'
 import type { AcervoTipo, UploadResponse, UploadError } from '@/types'
 import { formatFileSize } from '@/lib/utils'
 import { UPLOAD_MAX_SIZE_MB } from '@/lib/constants'
+import { api } from '@/lib/api'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 const TIPO_OPTIONS: { value: AcervoTipo; label: string }[] = [
   { value: 'artigos', label: 'Artigo / Trabalho acadêmico' },
   { value: 'imagens', label: 'Imagem' },
-  { value: 'videos', label: 'Vídeo' },
+  { value: 'videos', label: 'Vídeo' }
 ]
 
 export default function UploadForm() {
@@ -52,20 +53,23 @@ export default function UploadForm() {
     formData.append('arquivo', arquivo)
 
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      const data: UploadResponse | UploadError = await res.json()
+      // Use our api utility for POST request with FormData
+      const response = await api.post('/api/midias', formData)
 
-      if (!res.ok) {
-        setStatus('error')
-        setMessage((data as UploadError).error ?? 'Erro ao enviar o arquivo.')
-      } else {
-        setStatus('success')
-        setMessage((data as UploadResponse).message ?? 'Arquivo enviado com sucesso!')
-        reset()
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error ?? 'Erro ao enviar o arquivo.')
       }
-    } catch {
+
+      const data: UploadResponse = await response.json()
+
+      setStatus('success')
+      setMessage(data.message ?? 'Arquivo enviado com sucesso!')
+      reset()
+    } catch (err) {
+      console.error('[UploadForm] Error uploading file:', err)
       setStatus('error')
-      setMessage('Erro de conexão. Tente novamente.')
+      setMessage(err instanceof Error ? err.message : 'Erro de conexão. Tente novamente.')
     }
   }
 
