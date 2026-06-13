@@ -54,7 +54,9 @@ export default function UploadForm() {
 
     try {
       // Use our api utility for POST request with FormData
-      const response = await api.post('/api/midias', formData)
+      const response = await api.post('/api/midias', {
+        body: formData
+      })
 
       if (!response.ok) {
         const errorData = await response.json()

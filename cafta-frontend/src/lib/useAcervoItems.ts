@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { ArquivoAcervo } from './../types/index'
-import { api } from '@/lib/api'
+import { api } from '../lib/api'
 
-export function useAcervoItems() {
+export function useAcervoItems(p0: { searchTerm: string }) {
   const [data, setData] = useState<ArquivoAcervo[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)

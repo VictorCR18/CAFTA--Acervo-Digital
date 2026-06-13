@@ -8,7 +8,7 @@ import { usePesquisas } from '@/lib/usePesquisas'
 
 export default function AdminDashboard() {
   const { pendingFiles, loading: pendingLoading, error: pendingError } = usePendingFiles()
-  const { data: acervoItems, loading: acervoLoading, error: acervoError } = useAcervoItems()
+  const { data: acervoItems, loading: acervoLoading, error: acervoError } = useAcervoItems({ searchTerm: "" })
   const { data: pesquisas, loading: pesquisasLoading, error: pesquisasError } = usePesquisas()
 
   const [loading, setLoading] = useState<boolean>(true)

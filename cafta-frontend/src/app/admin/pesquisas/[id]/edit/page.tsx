@@ -71,7 +71,12 @@ export default function EditPesquisaPage() {
       if (updatedPesquisa.link !== undefined) updateData.link = updatedPesquisa.link;
       if (updatedPesquisa.destaque !== undefined) updateData.destaque = updatedPesquisa.destaque;
 
-      const response = await api.patch(`/api/pesquisas/${id}`, updateData);
+      const response = await api.patch(`/api/pesquisas/${id}`, {
+        body: JSON.stringify(updateData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

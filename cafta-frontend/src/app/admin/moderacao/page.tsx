@@ -59,7 +59,10 @@ export default function ModeracaoPage() {
 
       // Call backend API to approve file (change status to 'ativo')
       const response = await api.patch(`/api/midias/${filename}/status`, {
-        status: 'ativo'
+        body: JSON.stringify({ status: 'ativo' }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
 
       if (!response.ok) {
@@ -87,7 +90,10 @@ export default function ModeracaoPage() {
 
       // Call backend API to reject file (change status to 'inativo')
       const response = await api.patch(`/api/midias/${filename}/status`, {
-        status: 'inativo'
+        body: JSON.stringify({ status: 'inativo' }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
 
       if (!response.ok) {

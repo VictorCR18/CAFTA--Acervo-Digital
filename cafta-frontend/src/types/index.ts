@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 // ─── Acervo ───────────────────────────────────────────────────────────────────
 
 export type AcervoTipo = 'imagens' | 'videos' | 'artigos'

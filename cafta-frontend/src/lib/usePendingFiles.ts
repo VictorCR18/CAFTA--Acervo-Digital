@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArquivoAcervo } from '../types/index'
-import { api } from '@/lib/api'
+import { api } from '../lib/api'
 
 export function usePendingFiles() {
   const [pendingFiles, setPendingFiles] = useState<ArquivoAcervo[]>([])

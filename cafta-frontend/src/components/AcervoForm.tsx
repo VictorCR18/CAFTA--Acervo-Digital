@@ -118,7 +118,10 @@ export default function AcervoForm({
       if (Object.keys(submissionData).length > 0 || !isUpdate) {
         const response = await apiFetch(endpoint, {
           method,
-          body: submissionData,
+          body: JSON.stringify(submissionData),
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
 
         if (!response.ok) {
