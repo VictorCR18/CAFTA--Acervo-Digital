@@ -136,7 +136,7 @@ export default function Navbar() {
         {/* Admin CTA */}
         <div className="hidden md:block ml-4 relative">
           <Link href="/admin" className="btn-cafta-primary text-xs px-4 py-2">
-            Admin
+            Login
             {pendingCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs">
                 {pendingCount > 99 ? '99+' : pendingCount}
@@ -193,7 +193,7 @@ export default function Navbar() {
             </li>
             <li className="pt-2 relative">
               <Link href="/admin" className="btn-cafta-primary block text-center text-sm">
-                Admin
+                Login
                 {pendingCount > 0 && (
                   <span className="absolute -top-1 left-1/2 -translate-x-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs">
                     {pendingCount > 99 ? '99+' : pendingCount}
