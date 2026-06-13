@@ -9,15 +9,31 @@ import { env } from './config/env'
 import { errorHandler } from './middlewares/errorHandler'
 import midiaRoutes from './routes/midia.routes'
 import pesquisaRoutes from './routes/pesquisa.routes'
+import adminRoutes from './routes/admin.routes'
 
 export function createApp() {
   const app = express()
 
   // ─── Security ───────────────────────────────────────────────────────────────
   app.use(helmet())
+
+  // Configure CORS with multiple origins
+  const corsOriginList = env.CORS_ORIGIN
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(origin => origin.length > 0)
+
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true)
+        if (corsOriginList.includes(origin)) {
+          return callback(null, true)
+        } else {
+          return callback(new Error('Not allowed by CORS'))
+        }
+      },
       methods: ['GET', 'POST', 'PATCH', 'DELETE'],
       allowedHeaders: ['Content-Type', 'Authorization'],
     })
@@ -47,6 +63,7 @@ export function createApp() {
   // ─── API Routes ──────────────────────────────────────────────────────────────
   app.use('/api/midias', midiaRoutes)
   app.use('/api/pesquisas', pesquisaRoutes)
+  app.use('/api/admin', adminRoutes)
 
   // ─── Health check ────────────────────────────────────────────────────────────
   app.get('/health', (_req, res) => {
