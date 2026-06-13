@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { NAV_ITEMS } from '@/lib/constants'
+import { NAV_ITEMS } from './../../lib/constants'
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)

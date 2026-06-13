@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Acervo digital de imagens, vídeos e trabalhos acadêmicos do CAFTA - UFC",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

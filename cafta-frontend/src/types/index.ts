@@ -3,6 +3,11 @@
 export type AcervoTipo = 'imagens' | 'videos' | 'artigos'
 
 export interface ArquivoAcervo {
+  description: ReactNode
+  categoryId: ReactNode
+  historicalPeriod: ReactNode
+  authorship: ReactNode
+  publicationDate: string | number | Date
   id: string
   titulo: string
   tipo: AcervoTipo

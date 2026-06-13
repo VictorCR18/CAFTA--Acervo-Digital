@@ -1,4 +1,4 @@
-import { PESQUISAS_SAMPLE } from '@/lib/constants'
+import { usePesquisas } from '@/lib/usePesquisas'
 import type { Pesquisa } from '@/types'
 
 function PesquisaRow({ pesquisa }: { pesquisa: Pesquisa }) {
@@ -41,9 +41,58 @@ function PesquisaRow({ pesquisa }: { pesquisa: Pesquisa }) {
 }
 
 export default function PesquisasSection() {
-  const half = Math.ceil(PESQUISAS_SAMPLE.length / 2)
-  const col1 = PESQUISAS_SAMPLE.slice(0, half)
-  const col2 = PESQUISAS_SAMPLE.slice(half)
+  const { data: pesquisas, loading, error } = usePesquisas()
+
+  if (loading) {
+    return (
+      <section id="section_pesquisas" className="py-24 bg-cafta-primary">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center">
+            <div className="animate-spin -ml-1 mr-3 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="5"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </div>
+            <span className="ml-2 text-white">Carregando pesquisas...</span>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section id="section_pesquisas" className="py-24 bg-cafta-primary">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center">
+            <h2 className="text-white/50 text-sm mb-4">Erro</h2>
+            <p className="text-red-400">{error}</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Handle empty state
+  if (!pesquisas || pesquisas.length === 0) {
+    return (
+      <section id="section_pesquisas" className="py-24 bg-cafta-primary">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center">
+            <p className="text-white/50">
+              Nenhuma pesquisa encontrada.
+            </p>
+            <a href="#section_contato" className="text-cafta-gold/60 hover:text-cafta-gold transition-colors underline underline-offset-2">
+              Quer publicar a sua?
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  const half = Math.ceil(pesquisas.length / 2)
+  const col1 = pesquisas.slice(0, half)
+  const col2 = pesquisas.slice(half)
 
   return (
     <section id="section_pesquisas" className="py-24 bg-cafta-primary">

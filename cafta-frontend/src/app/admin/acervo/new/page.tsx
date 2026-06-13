@@ -1,6 +1,6 @@
 "use client"
 
-import AcervoForm from '@/components/AcervoForm'
+import AcervoForm from '../../../../components/AcervoForm'
 
 export default function NewAcervoPage() {
   const handleSubmitSuccess = (item: any) => {

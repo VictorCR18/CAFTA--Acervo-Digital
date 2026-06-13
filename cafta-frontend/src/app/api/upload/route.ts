@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { UPLOAD_ALLOWED_TYPES, UPLOAD_MAX_SIZE_MB } from '@/lib/constants'
-import { generateFilename, isMimeAllowed } from '@/lib/utils'
-import type { AcervoTipo, UploadResponse, UploadError } from '@/types'
+import { UPLOAD_ALLOWED_TYPES, UPLOAD_MAX_SIZE_MB } from '../../../lib/constants'
+import { generateFilename, isMimeAllowed } from '../../../lib/utils'
+import type { AcervoTipo, UploadResponse, UploadError } from '../../../types'
 
 export async function POST(request: NextRequest): Promise<NextResponse<UploadResponse | UploadError>> {
   try {

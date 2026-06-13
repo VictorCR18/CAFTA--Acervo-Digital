@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ArquivoAcervo } from '@/types/index'
-import { mockAcervoData } from '@/lib/mockAcervoData'
+import { ArquivoAcervo } from '../types/index'
+import { api } from '@/lib/api'
 
 export function usePendingFiles() {
   const [pendingFiles, setPendingFiles] = useState<ArquivoAcervo[]>([])
@@ -13,32 +13,26 @@ export function usePendingFiles() {
       setError(null)
 
       try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Fetch from backend API with status=processando (pending approval)
+        const response = await api.get('/api/midias?status=processando')
 
-        // Transform mock data to match ArquivoAcervo format
-        const transformedFiles: ArquivoAcervo[] = mockAcervoData.map(item => {
-          // Map categoryId to ArquivoAcervo tipo
-          const categoryId = String(item.categoryId)
-          const tipo: ArquivoAcervo['tipo'] = categoryId === 'documentos'
-            ? 'artigos'
-            : (item.categoryId as ArquivoAcervo['tipo'])
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
 
-          // Extract filename from fileUrl
-          const filename = item.fileUrl.split('/').pop() || ''
+        const result = await response.json()
 
-          // Format publicationDate to match dataUpload format
-          const dataUpload = new Date(item.publicationDate).toLocaleDateString("pt-BR")
-
-          return {
-            id: item.id,
-            titulo: item.title,
-            tipo,
-            filename,
-            url: item.fileUrl,
-            dataUpload
-          }
-        })
+        // Transform backend Midia objects to frontend ArquivoAcervo format
+        const transformedFiles: ArquivoAcervo[] = result.data.map((midia: any) => ({
+          id: midia.id,
+          titulo: midia.titulo,
+          tipo: midia.tipo as ArquivoAcervo['tipo'],
+          filename: midia.filename,
+          url: midia.thumbnailPath || '', // Use the public URL from backend
+          dataUpload: midia.criadoEm
+            ? new Date(midia.criadoEm).toLocaleDateString('pt-BR')
+            : '',
+        }))
 
         setPendingFiles(transformedFiles)
       } catch (err) {

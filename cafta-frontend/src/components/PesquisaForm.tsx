@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
 import { useState } from 'react'
 import { Pesquisa } from '@/types/index'
+import { api } from '@/lib/api'
 
 interface PesquisaFormProps {
   initialData?: Pesquisa
@@ -29,7 +30,7 @@ export default function PesquisaForm({
         authors: initialData.autores.join(', '),
         year: initialData.ano,
         link: initialData.link ?? '',
-        destaque: initialData.destaque ?? false,
+        destaque: initialData.destaque ?? false
       }
     }
     return {
@@ -37,7 +38,7 @@ export default function PesquisaForm({
       authors: '',
       year: new Date().getFullYear(),
       link: '',
-      destaque: false,
+      destaque: false
     }
   })
   const [errors, setErrors] = useState<Partial<Record<keyof PesquisaFormState, string>>>({})
@@ -118,40 +119,110 @@ export default function PesquisaForm({
     setIsLoading(true)
 
     try {
-      // Prepare data for submission
-      const pesquisaData: Omit<Pesquisa, 'id'> = {
-        title: formData.title.trim(),
+      // Prepare data for submission - map to backend expected format
+      const pesquisaData = {
+        titulo: formData.title.trim(),
         autores: formData.authors
           .split(',')
           .map((author) => author.trim())
           .filter((author) => author.length > 0),
         ano: parseInt(formData.year.toString()),
         link: formData.link.trim() || undefined,
-        destaque: formData.destaque,
-        titulo: ''
+        destaque: formData.destaque
       }
 
-      // For create, generate a mock ID (in real app, this would come from backend)
-      const pesquisaToSubmit: Pesquisa = {
-        ...pesquisaData,
-        id: formData.id || Math.random().toString(36).substr(2, 9),
+      // Determine if we're creating or updating
+      const isUpdate = !!formData.id
+      const endpoint = isUpdate
+        ? `/api/pesquisas/${formData.id}`
+        : `/api/pesquisas`
+      const method = isUpdate ? "PATCH" : "POST"
+
+      // Make the API call
+      const response = await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(pesquisaData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error ?? 'Erro ao enviar a pesquisa.')
       }
 
-      // In a real app, you would call an API here
-      // For now, we'll just simulate success
-      await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulate network delay
+      const result = await response.json()
+
+      // Map backend response to frontend Pesquisa format
+      const submittedPesquisa: Pesquisa = {
+        title: result.data.titulo,
+        id: result.data.id,
+        titulo: result.data.titulo,
+        autores: result.data.autores,
+        ano: result.data.ano,
+        link: result.data.link,
+        destaque: result.data.destaque
+      }
 
       // Call onSuccess callback if provided
       if (onSubmitSuccess) {
-        onSubmitSuccess(pesquisaToSubmit)
+        onSubmitSuccess(submittedPesquisa)
       }
     } catch (err) {
-      console.error('Submit error:', err)
-      // Show error to user (in a real app)
-      alert('Falha ao enviar. Por favor, tente novamente.')
+      console.error('[PesquisaForm] Submit error:', err)
+      // Show error to user
+      alert(err instanceof Error ? err.message : 'Falha ao enviar. Por favor, tente novamente.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Helper function to make API calls (similar to what's in lib/api.ts)
+  const apiFetch = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
+    const baseUrl = (() => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+      if (apiUrl) return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
+
+      if (process.env.NODE_ENV === 'production') {
+        return '' // Relative URLs in production
+      }
+
+      return 'http://localhost:4000' // Development fallback
+    })()
+
+    const url = `${baseUrl}${endpoint}`
+
+    const headers = new Headers(options.headers ?? {})
+
+    // Add credentials for same-origin requests (for auth cookies)
+    const isSameOrigin = !getApiBaseUrl() ||
+      (typeof window !== 'undefined' && window.location.origin === getApiBaseUrl())
+
+    if (isSameOrigin && !headers.has('Credentials') && !options.credentials) {
+      options.credentials = 'include'
+    }
+
+    const fetchOptions: RequestInit = {
+      ...options,
+      headers
+    }
+
+    return fetch(url, fetchOptions)
+  }
+
+  // Helper to get API base URL (same as in lib/api.ts)
+  const getApiBaseUrl = (): string => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    if (apiUrl) {
+      return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      return ''
+    }
+
+    return 'http://localhost:4000'
   }
 
   return (
@@ -310,7 +381,7 @@ export default function PesquisaForm({
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="ml-4 flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-primary/50 hover:bg-cafta-primary/70 focus:outline-none focus:ring-2 focus-ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="ml-4 flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-primary/50 hover:bg-cafta-primary/70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Voltar
           </button>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Pesquisa } from '@/types/index'
+import { Pesquisa } from '../src/types'
 import { api } from '@/lib/api'
 
 export function usePesquisas() {
@@ -58,7 +58,12 @@ export function usePesquisas() {
         destaque: novaPesquisa.destaque
       }
 
-      const response = await api.post('/api/pesquisas', backendData)
+      const response = await api.post('/api/pesquisas', {
+        body: JSON.stringify(backendData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -102,7 +107,12 @@ export function usePesquisas() {
       if (dadosAtualizacao.link !== undefined) backendData.link = dadosAtualizacao.link
       if (dadosAtualizacao.destaque !== undefined) backendData.destaque = dadosAtualizacao.destaque
 
-      const response = await api.patch(`/api/pesquisas/${id}`, backendData)
+      const response = await api.patch(`/api/pesquisas/${id}`, {
+        body: JSON.stringify(backendData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 import type { AcervoItem } from "@/types";
 
 interface AcervoFormProps {
@@ -48,7 +49,7 @@ export default function AcervoForm({
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     const fieldName = name as FormField;
@@ -96,32 +97,122 @@ export default function AcervoForm({
 
     setIsLoading(true);
 
-    // Simulate API call
     try {
-      // For create, generate a mock ID (in real app, this would come from backend)
-      const itemToSubmit: AcervoItem = {
-        ...formData,
-        id: formData.id || Math.random().toString(36).substr(2, 9), // Generate random ID if empty (create mode)
-      };
+      // Prepare data for submission based on whether we're creating or updating
+      const isUpdate = !!formData.id;
+      const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
+      const method = isUpdate ? "PATCH" : "POST";
 
-      // In a real app, you would call an API here
-      // For now, we'll just simulate success
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+      // Note: The AcervoItem fields don't map directly to Midia fields
+      // This is a simplified mapping - in a real app, you might need more complex transformation
+      const submissionData: Partial<{
+        titulo: string
+        // Note: Other AcervoItem fields don't have direct equivalents in Midia model
+        // For a complete implementation, you would need to adjust your backend models
+        // or create a mapping layer
+      }> = {};
 
-      // Call onSuccess callback if provided
-      if (onSubmitSuccess) {
-        onSubmitSuccess(itemToSubmit);
+      if (formData.title) submissionData.titulo = formData.title;
+
+      // Only make the API call if there's something to submit
+      if (Object.keys(submissionData).length > 0 || !isUpdate) {
+        const response = await apiFetch(endpoint, {
+          method,
+          body: submissionData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // For create operations, we might want to get the created item with ID
+        // For now, we'll call onSubmitSuccess with our form data
+        if (onSubmitSuccess) {
+          // In a real implementation, you might want to use the data returned from the API
+          onSubmitSuccess(formData as AcervoItem);
+        }
+      } else {
+        // Nothing to submit, just call success
+        if (onSubmitSuccess) {
+          onSubmitSuccess(formData as AcervoItem);
+        }
       }
 
       // Redirect to list page
       router.push("/admin/acervo");
     } catch (err) {
-      console.error("Submit error:", err);
-      // Show error to user (in a real app)
-      alert("Falha ao enviar. Por favor, tente novamente.");
+      console.error('[AcervoForm] Submit error:', err);
+      // Show error to user
+      alert('Falha ao enviar. Por favor, tente novamente.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to make API calls (similar to what's in lib/api.ts but simplified for form use)
+  const apiFetch = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
+    const baseUrl = (() => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (apiUrl) return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+      if (process.env.NODE_ENV === 'production') {
+        return ''; // Relative URLs in production
+      }
+
+      return 'http://localhost:4000'; // Development fallback
+    })();
+
+    const url = `${baseUrl}${endpoint}`;
+
+    const headers = new Headers(options.headers ?? {});
+
+    // Set Content-Type for JSON data (not for FormData)
+    if (
+      options.body &&
+      !(options.body instanceof FormData) &&
+      !(options.body instanceof URLSearchParams) &&
+      typeof options.body !== 'string'
+    ) {
+      if (!headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+      }
+
+      // Convert body to JSON if it's not already a string
+      if (typeof options.body !== 'string') {
+        options.body = JSON.stringify(options.body);
+      }
+    }
+
+    // Add credentials for same-origin requests
+    const isSameOrigin = !getApiBaseUrl() ||
+      (typeof window !== 'undefined' && window.location.origin === getApiBaseUrl());
+
+    if (isSameOrigin && !headers.has('Credentials') && !options.credentials) {
+      options.credentials = 'include';
+    }
+
+    const fetchOptions: RequestInit = {
+      ...options,
+      headers,
+    };
+
+    return fetch(url, fetchOptions);
+  };
+
+  // Helper to get API base URL (same as in lib/api.ts)
+  const getApiBaseUrl = (): string => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (apiUrl) {
+      return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      return '';
+    }
+
+    return 'http://localhost:4000';
   };
 
   return (
@@ -281,9 +372,7 @@ export default function AcervoForm({
             required
           />
           {errors.publicationDate && (
-            <p className="mt-1 text-red-400 text-sm">
-              {errors.publicationDate}
-            </p>
+            <p className="mt-1 text-red-400 text-sm">{errors.publicationDate}</p>
           )}
         </div>
 

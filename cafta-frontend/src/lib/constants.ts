@@ -1,6 +1,5 @@
-import type { NavItem, CategoriaAcervo, Pesquisa } from '@/types'
-
 // ─── Navigation ───────────────────────────────────────────────────────────────
+import { CategoriaAcervo, NavItem } from "../types"
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Início', href: '#section_inicio', sectionId: 'section_inicio' },
@@ -43,65 +42,6 @@ export const CATEGORIAS_ACERVO: CategoriaAcervo[] = [
   },
 ]
 
-// ─── Sample Pesquisas ─────────────────────────────────────────────────────────
-
-export const PESQUISAS_SAMPLE: Pesquisa[] = [
-  {
-    id: '1',
-    title: 'Impacto das Tecnologias Educacionais na Aprendizagem de Línguas Indígenas',
-    titulo: 'Impacto das Tecnologias Educacionais na Aprendizagem de Línguas Indígenas',
-    autores: ['Dr. Ana Silva', 'Prof. Carlos Santos', 'Dra. Maria Oliveira'],
-    ano: 2024,
-    link: 'https://doi.org/10.1000/educacao-indigena-2024',
-    destaque: true,
-  },
-  {
-    id: '2',
-    title: 'Análise Histórica dos Movimentos Estudantis no Ceará (1960-1980)',
-    titulo: 'Análise Histórica dos Movimentos Estudantis no Ceará (1960-1980)',
-    autores: ['Prof. João Pereira', 'Dra. Luciana Ferreira'],
-    ano: 2023,
-    link: 'https://periodicos.ufc.br/revistahistorica/article/view/12345',
-    destaque: false,
-  },
-  {
-    id: '3',
-    title: 'Sustentabilidade na Gestão de Resíduos Sólidos em Municípios do Semiárido',
-    titulo: 'Sustentabilidade na Gestão de Resíduos Sólidos em Municípios do Semiárido',
-    autores: ['Eng. Fernando Costa', 'Dra. Isabela Almeida', 'Prof. Roberto Lima'],
-    ano: 2023,
-    link: undefined,
-    destaque: true,
-  },
-  {
-    id: '4',
-    title: 'Métodos Quantitativos na Avaliação de Políticas Públicas de Educação',
-    titulo: 'Métodos Quantitativos na Avaliação de Políticas Públicas de Educação',
-    autores: ['Dra. Sofia Rocha', 'Prof. Eduardo Mendes'],
-    ano: 2022,
-    link: 'https://repositorio.ufc.br/handle/ri/67890',
-    destaque: false,
-  },
-  {
-    id: '5',
-    title: 'Preservação de Tradições Orais em Comunidades Ribeirinhas do Amazonas',
-    titulo: 'Preservação de Tradições Orais em Comunidades Ribeirinhas do Amazonas',
-    autores: ['Profa. Carla Novais', 'Dr. Diego Silva', 'MSc. Elena Santos'],
-    ano: 2022,
-    link: 'https://www.scielo.br/j/antropologia/a/abc123/',
-    destaque: false,
-  },
-  {
-    id: '6',
-    title: 'Inovação Pedagógica na Educação Profissional e Tecnológica',
-    titulo: 'Inovação Pedagógica na Educação Profissional e Tecnológica',
-    autores: ['Prof. Marcos Alves', 'Dra. Patricia Nunes'],
-    ano: 2021,
-    link: undefined,
-    destaque: true,
-  },
-]
-
 // ─── Contact Info ─────────────────────────────────────────────────────────────
 
 export const CONTATO = {
@@ -111,7 +51,7 @@ export const CONTATO = {
   telefone: '(85) 9999-9999',
 }
 
-// ─── Hero Slides ─────────────────────────────────────────────────────────────
+// ─── Hero Slides ──────────────────────────────────────────────────────────────
 
 export const HERO_SLIDES = [
   '/images/slides/campus-1.jpg',

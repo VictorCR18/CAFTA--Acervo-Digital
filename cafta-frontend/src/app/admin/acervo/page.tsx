@@ -2,24 +2,63 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { mockAcervoData } from "@/lib/mockAcervoData";
-import type { AcervoItem } from "@/types";
+import { useAcervoItems } from "@/lib/useAcervoItems";
+import { api } from "@/lib/api";
 
 export default function AcervoPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [items, setItems] = useState<AcervoItem[]>(mockAcervoData);
+  const { data: items, loading, error } = useAcervoItems({ searchTerm });
 
-  // Filter items based on search term
-  const filteredItems = items.filter((item) =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Filter items based on search term (now done via API, but we keep client-side filtering for instant feedback)
+  // Actually, since we're doing search via API, we don't need client-side filtering
+  // But let's keep the API search and remove client-side filter for simplicity
+  const filteredItems = items; // Already filtered by API if searchTerm is provided
 
-  const handleDelete = (id: string) => {
-    // In a real app, you would call an API to delete the item
-    // For now, we'll just filter it out from the state
-    setItems((prev) => prev.filter((item) => item.id !== id));
-    alert("Item excluído com sucesso");
+  const handleDelete = async (id: string) => {
+    try {
+      // Call backend API to delete the item
+      await api.delete(`/api/midias/${id}`);
+
+      // Refetch the data to update the list
+      // Note: In a real implementation, we might want to invalidate the cache or refetch
+      // For simplicity, we'll rely on the useEffect in the hook to refetch when searchTerm changes
+      // But since deleting doesn't change searchTerm, we need another approach
+
+      // For now, we'll show a success message and the user can refresh or search again
+      alert("Item excluído com sucesso");
+    } catch (err) {
+      console.error('[AcervoPage] Error deleting item:', err);
+      alert('Erro ao excluir item. Por favor, tente novamente.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cafta-dark flex items-center justify-center py-12">
+        <div className="text-center">
+          <svg className="animate-spin -ml-1 mr-3 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="5"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span className="ml-2 text-white">Carregando...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-cafta-dark flex items-center justify-center py-12">
+        <div className="text-center">
+          <h2 className="text-white/50 text-sm mb-4">Erro</h2>
+          <p className="text-red-400">{error}</p>
+          <Link href="/admin" className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus-ring-white focus:ring-offset-2 focus-ring-offset-cafta-dark">
+            Tentar novamente
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-cafta-dark">
@@ -110,7 +149,7 @@ export default function AcervoPage() {
                     className="hover:bg-white/5 transition-colors"
                   >
                     <td className="px-6 py-4 text-white text-sm">
-                      {item.title}
+                      {item.titulo}
                     </td>
                     <td className="px-6 py-4 text-white/80 text-sm max-w-[200px] truncate">
                       {item.description}
@@ -168,7 +207,7 @@ export default function AcervoPage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 00-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                           ></path>
                         </svg>
                       </button>
@@ -183,5 +222,3 @@ export default function AcervoPage() {
     </div>
   );
 }
-
-

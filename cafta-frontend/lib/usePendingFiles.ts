@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArquivoAcervo } from '@/types/index'
+import { ArquivoAcervo } from '../src/types'
 import { api } from '@/lib/api'
 
 export function usePendingFiles() {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PesquisaForm from "@/components/PesquisaForm";
-import { PESQUISAS_SAMPLE } from "@/lib/constants";
+import { api } from "@/lib/api";
 import type { Pesquisa } from "@/types";
 import Link from "next/link";
 
@@ -11,29 +11,92 @@ export default function EditPesquisaPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [pesquisa, setPesquisa] = useState<Pesquisa | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch pesquisa from mock data (in real app, this would be an API call)
-    const fetchPesquisa = () => {
+    const fetchPesquisa = async () => {
       setLoading(true);
-      const foundPesquisa = PESQUISAS_SAMPLE.find((p) => p.id === id);
-      if (foundPesquisa) {
-        setPesquisa(foundPesquisa);
-      } else {
-        // Pesquisa not found, set null to show "not found" message
-        setPesquisa(null);
+      setError(null);
+
+      try {
+        // Fetch pesquisa from backend API
+        const response = await api.get(`/api/pesquisas/${id}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const pesquisaData = await response.json();
+
+        // Map backend response to frontend Pesquisa format
+        const frontendPesquisa: Pesquisa = {
+          title: pesquisaData.titulo,
+          id: pesquisaData.id,
+          titulo: pesquisaData.titulo,
+          autores: pesquisaData.autores,
+          ano: pesquisaData.ano,
+          link: pesquisaData.link,
+          destaque: pesquisaData.destaque
+        };
+
+        setPesquisa(frontendPesquisa);
+      } catch (err) {
+        console.error('[EditPesquisaPage] Error fetching pesquisa:', err);
+        setError(err instanceof Error ? err.message : 'Erro ao carregar pesquisa');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchPesquisa();
+    if (id) {
+      fetchPesquisa();
+    }
   }, [id, router]);
+
+  const handleSubmitSuccess = async (updatedPesquisa: Pesquisa) => {
+    try {
+      // Map frontend Pesquisa format to backend UpdatePesquisaBody format
+      const updateData: Partial<{
+        titulo: string
+        autores: string[]
+        ano: number
+        link?: string
+        destaque?: boolean
+      }> = {};
+
+      if (updatedPesquisa.titulo !== undefined) updateData.titulo = updatedPesquisa.titulo;
+      if (updatedPesquisa.autores !== undefined) updateData.autores = updatedPesquisa.autores;
+      if (updatedPesquisa.ano !== undefined) updateData.ano = updatedPesquisa.ano;
+      if (updatedPesquisa.link !== undefined) updateData.link = updatedPesquisa.link;
+      if (updatedPesquisa.destaque !== undefined) updateData.destaque = updatedPesquisa.destaque;
+
+      const response = await api.patch(`/api/pesquisas/${id}`, updateData);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Redirect to pesquisas list on success
+      router.push("/admin/pesquisas");
+    } catch (err) {
+      console.error('[EditPesquisaPage] Error updating pesquisa:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar pesquisa');
+    }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
         <div className="text-white">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
+        <div className="text-red-400">{error}</div>
       </div>
     );
   }
@@ -46,14 +109,6 @@ export default function EditPesquisaPage() {
     );
   }
 
-  const handleSubmitSuccess = (updatedPesquisa: any) => {
-    // In a real app, you would update the item via API
-    // For now, we'll just update the mock data (not persistent)
-    console.log("Pesquisa atualizada com sucesso:", updatedPesquisa);
-    alert("Pesquisa atualizada com sucesso!");
-    router.push("/admin/pesquisas");
-  };
-
   return (
     <div className="min-h-screen bg-cafta-dark">
       {/* Header */}
@@ -63,7 +118,7 @@ export default function EditPesquisaPage() {
             <div>
               <h1 className="text-2xl font-bold text-white">Editar Pesquisa</h1>
               <p className="mt-1 text-sm text-white/60">
-                Atualize os detalhes de "{pesquisa?.title ?? ""}"
+                Atualize os detalhes de "{pesquisa.titulo}"
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -89,7 +144,7 @@ export default function EditPesquisaPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Editar Pesquisa</h1>
           <p className="mt-2 text-sm text-white/60">
-            Atualize os detalhes de "{pesquisa.title}"
+            Atualize os detalhes de "{pesquisa.titulo}"
           </p>
         </div>
         <PesquisaForm
