@@ -40,7 +40,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="pt-BR" className={jakarta.variable}>
+    <html lang="pt-BR" className={jakarta.className}>
       <body className="min-h-screen bg-cafta-dark font-sans">{children}</body>
     </html>
   )
