@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { ArquivoAcervo } from './../types/index'
+import { AcervoTipo, ArquivoAcervo } from './../types/index'
 import { api } from '../lib/api'
 
 export function useAcervoItems(p0: { searchTerm: string; tipo?: AcervoTipo }) {
