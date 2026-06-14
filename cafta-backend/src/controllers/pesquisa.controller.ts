@@ -22,6 +22,8 @@ export const createPesquisaHandler = asyncHandler(
 );
 
 // ─── GET /api/pesquisas ───────────────────────────────────────────────────────
+// All pesquisas are publicly accessible as there is no approval/status concept.
+// The 'destaque' field indicates featured items suitable for homepage display.
 
 export const getPesquisas = asyncHandler(
   async (req: Request, res: Response) => {

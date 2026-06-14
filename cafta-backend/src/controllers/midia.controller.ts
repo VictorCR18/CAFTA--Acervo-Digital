@@ -148,6 +148,8 @@ export const uploadMidia = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // ─── GET /api/midias ──────────────────────────────────────────────────────────
+// Returns list of media items. For public display (e.g., homepage), specify status='ativo'
+// to get only approved items. Defaults to status='ativo' when no status provided.
 
 export const getMidias = asyncHandler(async (req: Request, res: Response) => {
   const { tipo, status, search } = req.query as Record<string, string>;

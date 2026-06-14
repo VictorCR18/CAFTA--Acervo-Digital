@@ -39,7 +39,11 @@ const idParamSchema = z.object({
 /** POST /api/pesquisas */
 router.post('/', validate(createSchema), createPesquisaHandler)
 
-/** GET /api/pesquisas?search=texto&ano=2024&destaque=true */
+/** GET /api/pesquisas?search=texto&ano=2024&destaque=true
+ *
+ * Note: All pesquisas are publicly accessible as there is no approval/status concept.
+ * The 'destaque' field indicates featured items.
+ */
 router.get('/', validate(listQuerySchema, 'query'), getPesquisas)
 
 /** GET /api/pesquisas/:id */
