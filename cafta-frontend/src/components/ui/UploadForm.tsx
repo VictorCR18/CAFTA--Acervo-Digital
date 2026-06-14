@@ -18,6 +18,13 @@ export default function UploadForm() {
   const [titulo, setTitulo] = useState('')
   const [tipo, setTipo] = useState<AcervoTipo | ''>('')
   const [arquivo, setArquivo] = useState<File | null>(null)
+  // Novos campos descritivos
+  const [description, setDescription] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [historicalPeriod, setHistoricalPeriod] = useState('')
+  const [authorship, setAuthorship] = useState('')
+  const [publicationDate, setPublicationDate] = useState('')
+
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -26,6 +33,11 @@ export default function UploadForm() {
     setTitulo('')
     setTipo('')
     setArquivo(null)
+    setDescription('')
+    setCategoryId('')
+    setHistoricalPeriod('')
+    setAuthorship('')
+    setPublicationDate('')
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -34,7 +46,7 @@ export default function UploadForm() {
 
     if (!titulo.trim() || !tipo || !arquivo) {
       setStatus('error')
-      setMessage('Por favor, preencha todos os campos antes de enviar.')
+      setMessage('Por favor, preencha todos os campos obrigatórios antes de enviar.')
       return
     }
 
@@ -51,6 +63,12 @@ export default function UploadForm() {
     formData.append('titulo', titulo.trim())
     formData.append('tipo', tipo)
     formData.append('arquivo', arquivo)
+    // Adicionando os novos campos descritivos
+    formData.append('description', description.trim())
+    formData.append('categoryId', categoryId.trim())
+    formData.append('historicalPeriod', historicalPeriod.trim())
+    formData.append('authorship', authorship.trim())
+    formData.append('publicationDate', publicationDate)
 
     try {
       // Use our api utility for POST request with FormData
@@ -128,6 +146,85 @@ export default function UploadForm() {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Descrição */}
+      <div>
+        <label htmlFor="description" className="label-cafta">
+          Descrição
+        </label>
+        <textarea
+          id="description"
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Descreva detalhadamente o conteúdo do arquivo..."
+          className="input-cafta"
+          disabled={status === 'loading'}
+        />
+      </div>
+
+      {/* Categoria Adicional */}
+      <div>
+        <label htmlFor="categoryId" className="label-cafta">
+          Categoria (opcional)
+        </label>
+        <input
+          id="categoryId"
+          type="text"
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          placeholder="Ex: Documentos Históricos, Fotografias Antigas, etc."
+          className="input-cafta"
+          disabled={status === 'loading'}
+        />
+      </div>
+
+      {/* Período Histórico */}
+      <div>
+        <label htmlFor="historicalPeriod" className="label-cafta">
+          Período Histórico (opcional)
+        </label>
+        <input
+          id="historicalPeriod"
+          type="text"
+          value={historicalPeriod}
+          onChange={(e) => setHistoricalPeriod(e.target.value)}
+          placeholder="Ex: Império, Primeira República, Estado Novo..."
+          className="input-cafta"
+          disabled={status === 'loading'}
+        />
+      </div>
+
+      {/* Autoria */}
+      <div>
+        <label htmlFor="authorship" className="label-cafta">
+          Autoria / Responsabilidade (opcional)
+        </label>
+        <input
+          id="authorship"
+          type="text"
+          value={authorship}
+          onChange={(e) => setAuthorship(e.target.value)}
+          placeholder="Ex: João Silva, Maria Oliveira et al."
+          className="input-cafta"
+          disabled={status === 'loading'}
+        />
+      </div>
+
+      {/* Data de Publicação */}
+      <div>
+        <label htmlFor="publicationDate" className="label-cafta">
+          Data de Publicação Original (opcional)
+        </label>
+        <input
+          id="publicationDate"
+          type="date"
+          value={publicationDate}
+          onChange={(e) => setPublicationDate(e.target.value)}
+          className="input-cafta"
+          disabled={status === 'loading'}
+        />
       </div>
 
       {/* Arquivo */}

@@ -1,25 +1,26 @@
 import type { ReactNode } from 'react'
 
-// ─── Acervo ───────────────────────────────────────────────────────────────────
+// ─── Acervo ──────────────────────────────────────────────────────────────
 
 export type AcervoTipo = 'imagens' | 'videos' | 'artigos'
 
 export interface ArquivoAcervo {
-  description: ReactNode
-  categoryId: ReactNode
-  historicalPeriod: ReactNode
-  authorship: ReactNode
+  description: string
+  categoryId: string
+  historicalPeriod: string
+  authorship: string
   publicationDate: string | number | Date
   id: string
   titulo: string
   tipo: AcervoTipo
   filename: string
   url: string
+  thumbnailUrl?: string // URL pública da thumbnail (apenas para imagens)
   dataUpload: string
   tamanho?: number
 }
 
-// ─── Pesquisa ─────────────────────────────────────────────────────────────────
+// ─── Pesquisa ─────────────────────────────────────────────────────────────
 
 export interface Pesquisa {
   title: any
@@ -31,7 +32,7 @@ export interface Pesquisa {
   destaque?: boolean
 }
 
-// ─── Acervo Category Card ─────────────────────────────────────────────────────
+// ─── Acervo Category Card ────────────────────────────────────────────────
 
 export interface CategoriaAcervo {
   slug: AcervoTipo | string
@@ -41,7 +42,7 @@ export interface CategoriaAcervo {
   imagemAlt: string
 }
 
-// ─── Upload ───────────────────────────────────────────────────────────────────
+// ─── Upload ───────────────────────────────────────────────────────────────
 
 export interface UploadResponse {
   message: string
@@ -54,13 +55,15 @@ export interface UploadError {
   error: string
 }
 
-// ─── Navigation ───────────────────────────────────────────────────────────────
+// ─── Navigation ───────────────────────────────────────────────────────────
 
 export interface NavItem {
   label: string
   href: string
   sectionId?: string
 }
+
+// ─── Acervo Item (for admin details view) ────────────────────────────────
 
 export interface AcervoItem {
   id: string

@@ -51,14 +51,24 @@ export default function ModeracaoPage() {
     // In a real app, this would trigger a refetch if needed
   }, [])
 
+  // Handle file viewing - OPEN IN NEW TAB
+  async function handleView(url: string) {
+    if (url) {
+      // Open the URL in a new tab
+      window.open(url, '_blank');
+    } else {
+      alert('URL não disponível para este arquivo');
+    }
+  }
+
   // Handle file approval - NOW USING REAL API
-  async function handleApprove(filename: string, tipo: string) {
+  async function handleApprove(id: string, tipo: string) {
     try {
       // Show loading state
       setLoadingState(true)
 
       // Call backend API to approve file (change status to 'ativo')
-      const response = await api.patch(`/api/midias/${filename}/status`, {
+      const response = await api.patch(`/api/midias/${id}/status`, {
         body: JSON.stringify({ status: 'ativo' }),
         headers: {
           'Content-Type': 'application/json'
@@ -70,7 +80,7 @@ export default function ModeracaoPage() {
       }
 
       // Update UI optimistically
-      setPendingFilesState(prev => prev.filter(file => file.id !== filename))
+      setPendingFilesState(prev => prev.filter(file => file.id !== id))
 
       // Show success message
       alert('Arquivo aprovado com sucesso!')
@@ -83,13 +93,13 @@ export default function ModeracaoPage() {
   }
 
   // Handle file rejection - NOW USING REAL API
-  async function handleReject(filename: string, tipo: string) {
+  async function handleReject(id: string, tipo: string) {
     try {
       // Show loading state
       setLoadingState(true)
 
       // Call backend API to reject file (change status to 'inativo')
-      const response = await api.patch(`/api/midias/${filename}/status`, {
+      const response = await api.patch(`/api/midias/${id}/status`, {
         body: JSON.stringify({ status: 'inativo' }),
         headers: {
           'Content-Type': 'application/json'
@@ -101,7 +111,7 @@ export default function ModeracaoPage() {
       }
 
       // Update UI optimistically
-      setPendingFilesState(prev => prev.filter(file => file.id !== filename))
+      setPendingFilesState(prev => prev.filter(file => file.id !== id))
 
       // Show success message
       alert('Arquivo rejeitado com sucesso!')
@@ -261,7 +271,19 @@ export default function ModeracaoPage() {
 
                             <div className="flex items-center space-x-3">
                               <button
-                                onClick={() => handleApprove(file.filename, file.tipo)}
+                                onClick={() => handleView(file.url)}
+                                className="flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border border-transparent text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus-ring-white focus:ring-offset-2 focus-ring-offset-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Visualizar
+                                {/* Small eye icon */}
+                                <svg className="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                        d="M1 12s4-8 11-8 11 8-4 8-11-8-11-8z"/>
+                                </svg>
+                              </button>
+
+                              <button
+                                onClick={() => handleApprove(file.id, file.tipo)}
                                 className="flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border border-transparent text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus-ring-white focus:ring-offset-2 focus-ring-offset-cafta-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 Aprovar
@@ -273,7 +295,7 @@ export default function ModeracaoPage() {
                               </button>
 
                               <button
-                                onClick={() => handleReject(file.filename, file.tipo)}
+                                onClick={() => handleReject(file.id, file.tipo)}
                                 className="flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border border-transparent text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus-ring-red focus:ring-offset-2 focus-ring-offset-red transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 Rejeitar

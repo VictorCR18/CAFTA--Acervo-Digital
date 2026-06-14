@@ -29,19 +29,25 @@ export default function EditAcervoPage() {
 
         const midia = await response.json();
 
+        // Get R2 public URL from environment variables
+        const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
+
         // Transform Midia response to AcervoItem format for the form
-        // Note: This is a best-effort mapping based on available fields
+        // Map all available fields from Midia model
         const acervoItem: AcervoItem = {
           id: midia.id,
           title: midia.titulo,
-          // TODO: Map other fields appropriately based on actual data structure
-          // For now, we'll use placeholders or empty strings for unmapped fields
-          description: "", // Not directly available in Midia model
-          categoryId: midia.tipo, // Assuming tipo maps to categoryId
-          historicalPeriod: "", // Not in Midia model
-          authorship: "", // Not in Midia model
-          fileUrl: midia.thumbnailPath || "", // Using thumbnail as fileUrl for now
-          publicationDate: midia.criadoEm ? new Date(midia.criadoEm).toISOString().split('T')[0] : ""
+          description: midia.description || "",
+          categoryId: midia.categoryId || "",
+          historicalPeriod: midia.historicalPeriod || "",
+          authorship: midia.authorship || "",
+          // Construct file URL from R2 public URL and pathRelativo
+          fileUrl: r2PublicUrl && midia.pathRelativo
+            ? `${r2PublicUrl}/${midia.pathRelativo}`
+            : "",
+          publicationDate: midia.publicationDate
+            ? new Date(midia.publicationDate).toISOString().split('T')[0]
+            : (midia.criadoEm ? new Date(midia.criadoEm).toISOString().split('T')[0] : "")
         };
 
         setItem(acervoItem);
@@ -63,16 +69,39 @@ export default function EditAcervoPage() {
       // Map AcervoItem fields to Midia update format
       const updateData: Partial<{
         titulo: string
-        // Note: Other fields may not be updatable via Midia model
-        // We'll only update what we know is safe
+        description: string | null
+        categoryId: string | null
+        historicalPeriod: string | null
+        authorship: string | null
+        publicationDate: string
       }> = {};
 
       if (updatedItem.title !== undefined) {
         updateData.titulo = updatedItem.title;
       }
 
-      // TODO: Add other fields if they can be updated via API
-      // For example, if the backend supports updating description, etc.
+      if (updatedItem.description !== undefined) {
+        updateData.description = updatedItem.description;
+      }
+
+      if (updatedItem.categoryId !== undefined) {
+        updateData.categoryId = updatedItem.categoryId;
+      }
+
+      if (updatedItem.historicalPeriod !== undefined) {
+        updateData.historicalPeriod = updatedItem.historicalPeriod;
+      }
+
+      if (updatedItem.authorship !== undefined) {
+        updateData.authorship = updatedItem.authorship;
+      }
+
+      if (updatedItem.publicationDate !== undefined) {
+        // Convert publicationDate to YYYY-MM-DD string for the backend
+        updateData.publicationDate = typeof updatedItem.publicationDate === 'string'
+          ? updatedItem.publicationDate
+          : updatedItem.publicationDate.toISOString().split('T')[0];
+      }
 
       // Only make the API call if there's something to update
       if (Object.keys(updateData).length > 0) {

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { parsePagination } from "../utils/pagination";
+import { createHash } from "crypto";
 import {
   generateThumbnailBuffer,
   stripExifBuffer,
@@ -16,6 +17,8 @@ import {
   updateMidiaStatus,
   updateMidiaThumbnail,
   deleteMidia,
+  updateMidia,
+  getMidiaByHash,
 } from "../models/midia.model";
 import type { MidiaTipo, MidiaStatus } from "../types";
 
@@ -41,14 +44,50 @@ const MIME_TO_EXT: Record<string, string> = {
 export const uploadMidia = asyncHandler(async (req: Request, res: Response) => {
   if (!req.file) throw new AppError("Arquivo não enviado.", 400);
 
-  const { titulo, tipo } = req.body as { titulo: string; tipo: MidiaTipo };
+  const {
+    titulo,
+    tipo,
+    description,
+    categoryId,
+    historicalPeriod,
+    authorship,
+    publicationDate
+  } = req.body as {
+    titulo: string;
+    tipo: MidiaTipo;
+    description?: string | null;
+    categoryId?: string | null;
+    historicalPeriod?: string | null;
+    authorship?: string | null;
+    publicationDate?: string | null; // Date string from frontend
+  };
+
   const file = req.file;
 
+  // 1. Calcular hash SHA-256 do arquivo para detecção de duplicata
+  const hashBuffer = createHash('sha256').update(file.buffer).digest();
+  const hash = hashBuffer.toString('hex');
+
+  // 2. Verificar se já existe uma mídia com este hash
+  const existingMidia = await getMidiaByHash(hash);
+  if (existingMidia) {
+    // Arquivo duplicado detectado - retornar a mídia existente
+    return res.status(200).json({
+      success: true,
+      data: { ...existingMidia, tamanhoBytes: existingMidia.tamanhoBytes.toString() },
+      message: "Arquivo já existe no acervo. Retornando registro existente.",
+    });
+  }
+
+  // 3. Se não for duplicado, prosseguir com o upload normal
   const ext = MIME_TO_EXT[file.mimetype] ?? path.extname(file.originalname);
   const filename = `${uuidv4()}${ext}`;
   const key = `${tipo}/${filename}`; // ex: "imagens/uuid.jpg"
 
-  // Cria registro no banco com status "processando"
+  // Converte publicationDate de string para Date object se fornecido
+  const pubDate = publicationDate ? new Date(publicationDate) : null;
+
+  // Cria registro no banco com status "processando" e hash
   const midia = await createMidia({
     titulo,
     tipo,
@@ -57,6 +96,13 @@ export const uploadMidia = asyncHandler(async (req: Request, res: Response) => {
     mimetype: file.mimetype,
     tamanhoBytes: BigInt(file.size),
     pathRelativo: key, // mantém semântica: caminho relativo dentro do R2
+    hash, // Armazena o hash para futura detecção de duplicatas
+    // Novos campos descritivos
+    description: description ?? null,
+    categoryId: categoryId ?? null,
+    historicalPeriod: historicalPeriod ?? null,
+    authorship: authorship ?? null,
+    publicationDate: pubDate,
   });
 
   // Pós-processamento não-bloqueante — responde ao cliente primeiro
@@ -84,11 +130,14 @@ export const uploadMidia = asyncHandler(async (req: Request, res: Response) => {
       } else {
         // Vídeos e artigos: upload direto para o R2
         await uploadToR2(key, fileBuffer, file.mimetype);
-        await updateMidiaStatus(midia.id, "ativo");
+        // NOTA: Mantém status como "processando" para passar pela aprovação
+        // O status será atualizado manualmente pelo admin na página de moderação
       }
     } catch (err) {
       console.error(`❌  Falha no pós-processamento de ${midia.id}:`, err);
-      await updateMidiaStatus(midia.id, "ativo"); // fallback: marca ativo de qualquer forma
+      // Em caso de erro, mantém como "processando" para tentar novamente posteriormente
+      // ou pode ser marcado como "inativo" se preferir tratar como falha permanente
+      // await updateMidiaStatus(midia.id, "processando"); // Já é o status atual
     }
   });
 
@@ -136,7 +185,7 @@ export const getMidiaByIdHandler = asyncHandler(
   },
 );
 
-// ─── DELETE /api/midias/:id ───────────────────────────────────────────────────
+// ─── DELETE /api/midias/:id ─────────────────────────────────────────────────
 
 export const deleteMidiaHandler = asyncHandler(
   async (req: Request, res: Response) => {
@@ -150,5 +199,59 @@ export const deleteMidiaHandler = asyncHandler(
     if (midia.thumbnailPath) void deleteFromR2(keyFromUrl(midia.thumbnailPath));
 
     res.json({ success: true, message: "Mídia removida com sucesso." });
+  },
+);
+
+// ─── PATCH /api/midias/:id/status ────────────────────────────────────────────
+
+export const updateMidiaStatusHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body as { status: MidiaStatus };
+
+    const midia = await updateMidiaStatus(id, status);
+    if (!midia) throw new AppError("Mídia não encontrada.", 404);
+
+    res.json({
+      success: true,
+      data: { ...midia, tamanhoBytes: midia.tamanhoBytes.toString() },
+    });
+  },
+);
+
+// ─── PATCH /api/midias/:id ────────────────────────────────────────────────
+
+export const updateMidiaHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const updates = req.body as {
+      titulo?: string;
+      description?: string | null;
+      categoryId?: string | null;
+      historicalPeriod?: string | null;
+      authorship?: string | null;
+      publicationDate?: string | null; // Date string from frontend
+    };
+
+    // Converte publicationDate de string para Date object se fornecido
+    const publicationDate = updates.publicationDate
+      ? new Date(updates.publicationDate)
+      : null;
+
+    const midia = await updateMidia(id, {
+      titulo: updates.titulo,
+      description: updates.description ?? null,
+      categoryId: updates.categoryId ?? null,
+      historicalPeriod: updates.historicalPeriod ?? null,
+      authorship: updates.authorship ?? null,
+      publicationDate,
+    });
+
+    if (!midia) throw new AppError("Mídia não encontrada.", 404);
+
+    res.json({
+      success: true,
+      data: { ...midia, tamanhoBytes: midia.tamanhoBytes.toString() },
+    });
   },
 );

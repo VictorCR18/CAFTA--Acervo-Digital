@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums ────────────────────────────────────────────────────────────────────
+// ─── Enums ─────────────────────────────────────────────────────────────
 
 enum MidiaTipo {
   imagens
@@ -21,14 +21,14 @@ enum MidiaStatus {
   processando
 }
 
-// ─── Models ───────────────────────────────────────────────────────────────────
+// ─── Models ────────────────────────────────────────────────────────────
 
 /// Metadados de cada arquivo de mídia.
 /// O binário nunca entra no banco — fica no Cloudflare R2.
 /// pathRelativo é o key interno do bucket (ex: "imagens/uuid.jpg").
 /// thumbnailPath é a URL pública completa da thumbnail no R2.
 model Midia {
-  id                String      @id @default(uuid()) @db.Uuid
+  id                String      @id @default(uuid())
   titulo            String
   tipo              MidiaTipo
   filename          String      @unique            // nome no R2 (uuid.ext)
@@ -37,12 +37,22 @@ model Midia {
   tamanhoBytes      BigInt
   pathRelativo      String                         // key no R2, ex: imagens/abc.jpg
   thumbnailPath     String?                        // URL pública da thumb no R2
+  hash              String?                        // Hash SHA-256 do conteúdo para detecção de duplicata
   status            MidiaStatus @default(ativo)
+
+  // Novos campos para metadados descritivos do acervo
+  description       String?     // Descrição detalhada do item
+  categoryId        String?     // Categoria adicional para classificação
+  historicalPeriod  String?     // Período histórico relevante (ex: "Império", "República")
+  authorship        String?     // Informações de autoria/responsabilidade
+  publicationDate   DateTime?   // Data de publicação original do material
+
   criadoEm         DateTime    @default(now())
   atualizadoEm     DateTime    @updatedAt
 
   @@index([tipo])
   @@index([status])
+  @@index([hash], map: "midia_hash_idx")  // Índice para busca rápida por hash
   @@index([criadoEm(sort: Desc)])
   @@map("midias")
 }
@@ -50,7 +60,7 @@ model Midia {
 /// Produções acadêmicas do curso.
 /// autores é um array de strings salvo como Json (jsonb no Postgres).
 model Pesquisa {
-  id           String   @id @default(uuid()) @db.Uuid
+  id           String   @id @default(uuid())
   titulo       String
   autores      Json     @default("[]")             // string[]
   ano          Int

@@ -103,16 +103,25 @@ export default function AcervoForm({
       const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
       const method = isUpdate ? "PATCH" : "POST";
 
-      // Note: The AcervoItem fields don't map directly to Midia fields
-      // This is a simplified mapping - in a real app, you might need more complex transformation
+      // Map AcervoItem fields to Midia model fields
       const submissionData: Partial<{
         titulo: string
-        // Note: Other AcervoItem fields don't have direct equivalents in Midia model
-        // For a complete implementation, you would need to adjust your backend models
-        // or create a mapping layer
+        description: string | null
+        categoryId: string | null
+        historicalPeriod: string | null
+        authorship: string | null
+        publicationDate: string
       }> = {};
 
       if (formData.title) submissionData.titulo = formData.title;
+      if (formData.description !== undefined) submissionData.description = formData.description || null;
+      if (formData.categoryId !== undefined) submissionData.categoryId = formData.categoryId || null;
+      if (formData.historicalPeriod !== undefined) submissionData.historicalPeriod = formData.historicalPeriod || null;
+      if (formData.authorship !== undefined) submissionData.authorship = formData.authorship || null;
+      if (formData.publicationDate) {
+        // publicationDate is already a string in YYYY-MM-DD format from the form
+        submissionData.publicationDate = formData.publicationDate;
+      }
 
       // Only make the API call if there's something to submit
       if (Object.keys(submissionData).length > 0 || !isUpdate) {

@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from 'react'
 import { Pesquisa } from '@/types/index'
 import { api } from '@/lib/api'
