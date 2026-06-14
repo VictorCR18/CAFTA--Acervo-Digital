@@ -74,4 +74,5 @@ export interface AcervoItem {
   authorship: string
   fileUrl: string
   publicationDate: string | Date
+  tipo: AcervoTipo
 }

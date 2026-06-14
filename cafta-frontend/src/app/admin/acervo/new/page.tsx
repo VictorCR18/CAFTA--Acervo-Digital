@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation"
 import AcervoForm from '../../../../components/AcervoForm'
-import type { AcervoTipo } from '@/types'
+import type { AcervoTipo, AcervoItem } from '@/types'
 
 export default function NewAcervoPage() {
   const searchParams = useSearchParams()
@@ -17,9 +17,7 @@ export default function NewAcervoPage() {
   }
 
   // Prepare initial data with tipo if provided
-  const initialData = tipo ? {
-    tipo: tipo
-  } : undefined
+  const initialData = tipo ? ({ tipo } as AcervoItem) : undefined
 
   return (
     <div className="min-h-screen bg-cafta-dark p-6">
