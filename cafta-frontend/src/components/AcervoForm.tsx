@@ -27,6 +27,7 @@ export default function AcervoForm({
     authorship: "",
     fileUrl: "",
     publicationDate: "",
+    tipo: "",
   });
   type FormField = Exclude<keyof AcervoItem, "id">;
 
@@ -70,6 +71,7 @@ export default function AcervoForm({
       "authorship",
       "fileUrl",
       "publicationDate",
+      "tipo",
     ];
     requiredFields.forEach((field) => {
       if (!formData[field]) {
