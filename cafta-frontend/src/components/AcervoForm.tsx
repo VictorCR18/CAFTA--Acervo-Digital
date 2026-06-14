@@ -15,8 +15,10 @@ export default function AcervoForm({
   onSubmitSuccess,
 }: AcervoFormProps) {
   const router = useRouter();
-  type FormData = Omit<AcervoItem, "publicationDate"> & {
+  type FormData = Omit<AcervoItem, "publicationDate" | "tipo"> & {
     publicationDate: string;
+    // allow empty string while filling the form before a valid AcervoTipo is selected
+    tipo: AcervoItem["tipo"] | "";
   };
   const [formData, setFormData] = useState<FormData>({
     id: "",
@@ -82,7 +84,8 @@ export default function AcervoForm({
           historicalPeriod: "Período Histórico",
           authorship: "Autoria",
           fileUrl: "URL do Arquivo",
-          publicationDate: "Data de Publicação"
+          publicationDate: "Data de Publicação",
+          tipo: ""
         };
         newErrors[field] = `${fieldLabels[field]} é obrigatório`;
       }
