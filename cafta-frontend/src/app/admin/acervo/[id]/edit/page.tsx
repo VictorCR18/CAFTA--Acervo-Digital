@@ -48,7 +48,7 @@ export default function EditAcervoPage() {
           publicationDate: midia.publicationDate
             ? new Date(midia.publicationDate).toISOString().split('T')[0]
             : (midia.criadoEm ? new Date(midia.criadoEm).toISOString().split('T')[0] : ""),
-          tipo: "imagens"
+          tipo: midia.tipo
         };
 
         setItem(acervoItem);

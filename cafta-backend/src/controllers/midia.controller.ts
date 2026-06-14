@@ -141,7 +141,7 @@ export const uploadMidia = asyncHandler(async (req: Request, res: Response) => {
     }
   });
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: { ...midia, tamanhoBytes: midia.tamanhoBytes.toString() },
   });

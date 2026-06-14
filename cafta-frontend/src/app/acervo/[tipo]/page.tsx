@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "../../../components/layout/Navbar";
 import Footer from "../../../components/layout/Footer";
-import { labelForTipo, actionLabelForTipo } from "../../..//lib/utils";
+import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
 import type { AcervoTipo, ArquivoAcervo } from "../../../types";
 
 // ─── Static params ─────────────────────────────────────────────────────────────

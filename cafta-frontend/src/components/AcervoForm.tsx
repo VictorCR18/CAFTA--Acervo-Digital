@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import type { AcervoItem } from "@/types";
+import type { AcervoItem, AcervoTipo } from "@/types";
 
 interface AcervoFormProps {
   initialData?: AcervoItem;
@@ -85,7 +85,7 @@ export default function AcervoForm({
           authorship: "Autoria",
           fileUrl: "URL do Arquivo",
           publicationDate: "Data de Publicação",
-          tipo: ""
+          tipo: "Tipo"
         };
         newErrors[field] = `${fieldLabels[field]} é obrigatório`;
       }
@@ -116,6 +116,7 @@ export default function AcervoForm({
         historicalPeriod: string | null
         authorship: string | null
         publicationDate: string
+        tipo: AcervoTipo
       }> = {};
 
       if (formData.title) submissionData.titulo = formData.title;
@@ -126,6 +127,9 @@ export default function AcervoForm({
       if (formData.publicationDate) {
         // publicationDate is already a string in YYYY-MM-DD format from the form
         submissionData.publicationDate = formData.publicationDate;
+      }
+      if (formData.tipo) {
+        submissionData.tipo = formData.tipo;
       }
 
       // Only make the API call if there's something to submit
@@ -390,6 +394,32 @@ export default function AcervoForm({
           />
           {errors.publicationDate && (
             <p className="mt-1 text-red-400 text-sm">{errors.publicationDate}</p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="tipo"
+            className="block mb-2 text-white font-medium"
+          >
+            Tipo
+          </label>
+          <select
+            id="tipo"
+            name="tipo"
+            value={formData.tipo}
+            onChange={handleChange}
+            className="block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+            required
+            disabled={!!initialData && !!initialData.id}
+          >
+            <option value="">Selecione o tipo</option>
+            <option value="imagens">Imagens</option>
+            <option value="videos">Vídeos</option>
+            <option value="artigos">Artigos</option>
+          </select>
+          {errors.tipo && (
+            <p className="mt-1 text-red-400 text-sm">{errors.tipo}</p>
           )}
         </div>
 
