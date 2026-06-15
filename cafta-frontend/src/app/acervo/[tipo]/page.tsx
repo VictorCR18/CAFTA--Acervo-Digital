@@ -1,16 +1,17 @@
-'use client';
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { useAcervoItems } from "@/lib/useAcervoItems";
 import { useState } from "react";
 import Navbar from "../../../components/layout/Navbar";
+	import { api } from "@/lib/api";
 import Footer from "../../../components/layout/Footer";
 import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
 import type { AcervoTipo, ArquivoAcervo } from "../../../types";
+import { useAcervoItems } from "@/lib/useAcervoItems";
 
 // ─── Static params ─────────────────────────────────────────────────────────────
+
 
 export function generateStaticParams() {
   const tipos: AcervoTipo[] = ["imagens", "videos", "artigos"];
