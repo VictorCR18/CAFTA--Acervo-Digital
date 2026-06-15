@@ -1,4 +1,3 @@
-"use client";
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -8,8 +7,6 @@ import { api } from "@/lib/api";
 import Footer from "../../../components/layout/Footer";
 import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
 import type { AcervoTipo, ArquivoAcervo } from "../../../types";
-import { useAcervoItems } from "@/lib/useAcervoItems";
-import { useState } from "react";
 
 // ─── Static params ─────────────────────────────────────────────────────────────
 
@@ -34,11 +31,16 @@ export async function generateMetadata({
 
 interface PageProps {
   params: { tipo: string };
+  searchParams: {
+    search?: string;
+    [key: string]: string | string[] | undefined
+  };
 }
 
-export default function AcervoTipoPage({ params }: PageProps) {
+export default async function AcervoTipoPage({ params, searchParams }: PageProps) {
   const tipo = params.tipo as AcervoTipo;
   const validTipos: AcervoTipo[] = ["imagens", "videos", "artigos"];
+  const searchTerm = searchParams.search ?? "";
 
   if (!validTipos.includes(tipo)) {
     return (
@@ -48,11 +50,70 @@ export default function AcervoTipoPage({ params }: PageProps) {
     );
   }
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const { data: arquivos, loading, error } = useAcervoItems({
-    searchTerm,
-    tipo: tipo
-  });
+  // Fetch data from backend API
+  let arquivos: any[] = [];
+  let loading = true;
+  let error: string | null = null;
+
+  try {
+    // Build query parameters
+    const paramsObj = new URLSearchParams();
+    paramsObj.append('status', 'ativo'); // Always show only approved files
+
+    // Add search term if provided
+    if (searchTerm?.trim()) {
+      paramsObj.append('search', searchTerm.trim());
+    }
+
+    // Add tipo filter
+    paramsObj.append('tipo', tipo);
+
+    // Fetch from backend API
+    const response = await api.get(`/api/midias?${paramsObj.toString()}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    // Get R2 public URL from environment variables
+    const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
+
+    // Transform backend Midia objects to frontend format
+    arquivos = result.data.map((midia: any) => {
+      // Construct the public URL for the file in R2
+      const fileUrl = r2PublicUrl && midia.pathRelativo
+        ? `${r2PublicUrl}/${midia.pathRelativo}`
+        : '';
+
+      return {
+        id: midia.id,
+        titulo: midia.titulo,
+        tipo: midia.tipo,
+        filename: midia.filename,
+        url: fileUrl, // Public URL of the file in R2
+        thumbnailUrl: midia.thumbnailPath, // Public URL of thumbnail (for images)
+        dataUpload: midia.criadoEm
+          ? new Date(midia.criadoEm).toLocaleDateString('pt-BR')
+          : '',
+        tamanho: midia.tamanhoBytes ? Number(midia.tamanhoBytes) : undefined,
+        // Mapeando os novos campos descritivos
+        description: midia.description || '',
+        categoryId: midia.categoryId || '',
+        historicalPeriod: midia.historicalPeriod || '',
+        authorship: midia.authorship || '',
+        publicationDate: midia.publicationDate
+          ? new Date(midia.publicationDate).toLocaleDateString('pt-BR')
+          : '',
+      };
+    });
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Erro ao carregar itens do acervo';
+    console.error('[AcervoTipoPage] Error fetching acervo items:', err);
+  } finally {
+    loading = false;
+  }
 
   const label = labelForTipo(tipo);
   const actionLabel = actionLabelForTipo(tipo);
@@ -67,7 +128,7 @@ export default function AcervoTipoPage({ params }: PageProps) {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="5"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
-            <span className="ml-2 text-white">Carregando...</span>
+            <span className="text-white">Carregando...</span>
           </div>
         </main>
         <Footer />
