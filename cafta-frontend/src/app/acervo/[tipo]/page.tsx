@@ -1,9 +1,9 @@
 
-import { promises as fs } from "fs";
-import path from "path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { useAcervoItems } from "@/lib/useAcervoItems";
+import { useEffect, useState } from "react";
 import Navbar from "../../../components/layout/Navbar";
 import Footer from "../../../components/layout/Footer";
 import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
@@ -27,41 +27,13 @@ export async function generateMetadata({
   return { title: label };
 }
 
-// ─── Data loading ─────────────────────────────────────────────────────────────
-
-async function getArquivos(tipo: AcervoTipo): Promise<ArquivoAcervo[]> {
-  const dir = path.join(process.cwd(), "public", "uploads", tipo);
-  try {
-    const files = await fs.readdir(dir);
-    return files
-      .filter((f) => !f.startsWith("."))
-      .map((filename) => ({
-        id: filename,
-        titulo: filename.replace(/^\d+-/, "").replace(/\.[^.]+$/, ""),
-        tipo,
-        filename,
-        url: `/uploads/${tipo}/${filename}`,
-        dataUpload: new Date(
-          parseInt(filename.split(".")[0]),
-        ).toLocaleDateString("pt-BR"),
-        description: "",
-        categoryId: "",
-        historicalPeriod: "",
-        authorship: "",
-        publicationDate: "",
-      }));
-  } catch {
-    return [];
-  }
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface PageProps {
   params: { tipo: string };
 }
 
-export default async function AcervoTipoPage({ params }: PageProps) {
+export default function AcervoTipoPage({ params }: PageProps) {
   const tipo = params.tipo as AcervoTipo;
   const validTipos: AcervoTipo[] = ["imagens", "videos", "artigos"];
 
@@ -73,9 +45,50 @@ export default async function AcervoTipoPage({ params }: PageProps) {
     );
   }
 
-  const arquivos = await getArquivos(tipo);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: arquivos, loading, error } = useAcervoItems({
+    searchTerm,
+    tipo: tipo
+  });
+
   const label = labelForTipo(tipo);
   const actionLabel = actionLabelForTipo(tipo);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-cafta-dark flex items-center justify-center pt-[72px]">
+          <div className="text-center">
+            <svg className="animate-spin -ml-1 mr-3 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="5"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span className="ml-2 text-white">Carregando...</span>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-cafta-dark flex items-center justify-center pt-[72px]">
+          <div className="text-center">
+            <h2 className="text-white/50 text-sm mb-4">Erro</h2>
+            <p className="text-red-400">{error}</p>
+            <Link href="/#section_acervo" className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark">
+              Tentar novamente
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -184,6 +197,15 @@ export default async function AcervoTipoPage({ params }: PageProps) {
                 <p className="text-white/30 text-sm">
                   Nenhum arquivo encontrado nesta categoria.
                 </p>
+                {searchTerm ? (
+                  <p className="text-white/40 text-sm mt-2">
+                    Nenhum item encontrado para "{searchTerm}"
+                  )
+                ) : (
+                  <p className="text-white/40 text-sm mt-2">
+                    Nenhum item cadastrado ainda nesta categoria
+                  )
+                )}
                 <Link
                   href="/upload"
                   className="btn-cafta-outline text-xs mt-6 inline-flex"
