@@ -1,3 +1,5 @@
+'use client';
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -6,7 +8,7 @@ import { useState } from "react";
 import Navbar from "../../../components/layout/Navbar";
 import Footer from "../../../components/layout/Footer";
 import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
-import type { AcervoTipo } from "../../../types";
+import type { AcervoTipo, ArquivoAcervo } from "../../../types";
 
 // ─── Static params ─────────────────────────────────────────────────────────────
 
