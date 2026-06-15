@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { useAcervoItems } from "@/lib/useAcervoItems";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Navbar from "../../../components/layout/Navbar";
 import Footer from "../../../components/layout/Footer";
 import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
-import type { AcervoTipo, ArquivoAcervo } from "../../../types";
+import type { AcervoTipo } from "../../../types";
 
 // ─── Static params ─────────────────────────────────────────────────────────────
 
@@ -200,11 +200,11 @@ export default function AcervoTipoPage({ params }: PageProps) {
                 {searchTerm ? (
                   <p className="text-white/40 text-sm mt-2">
                     Nenhum item encontrado para "{searchTerm}"
-                  )
+                  </p>
                 ) : (
                   <p className="text-white/40 text-sm mt-2">
                     Nenhum item cadastrado ainda nesta categoria
-                  )
+                  </p>
                 )}
                 <Link
                   href="/upload"
