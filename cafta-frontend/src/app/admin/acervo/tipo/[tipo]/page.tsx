@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAcervoItems } from "@/lib/useAcervoItems";
 import { labelForTipo, actionLabelForTipo } from "@/lib/utils";
 import type { AcervoTipo, ArquivoAcervo } from "@/types";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 export default function AcervoTipoPage() {
   const params = useParams<{ tipo: string }>();

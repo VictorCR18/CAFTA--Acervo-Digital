@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import type { AcervoTipo, UploadResponse, UploadError } from '@/types'
 import { formatFileSize } from '@/lib/utils'
 import { UPLOAD_MAX_SIZE_MB } from '@/lib/constants'
-import { api } from '@/lib/api'
+import api from '@/lib/api'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 

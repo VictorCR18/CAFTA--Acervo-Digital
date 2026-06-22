@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAcervoItems } from "@/lib/useAcervoItems";
 import { CATEGORIAS_ACERVO } from "@/lib/constants";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 export default function AcervoPage() {
   const [searchTerm, setSearchTerm] = useState("");

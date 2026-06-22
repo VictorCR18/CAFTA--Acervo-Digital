@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import AcervoForm from "../../../../../components/AcervoForm";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 import type { AcervoItem } from "../../../../../types";
 import Link from "next/link";
 

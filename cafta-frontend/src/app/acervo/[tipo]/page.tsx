@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "../../../components/layout/Navbar";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 import Footer from "../../../components/layout/Footer";
 import { labelForTipo, actionLabelForTipo } from "../../../lib/utils";
 import type { AcervoTipo, ArquivoAcervo } from "../../../types";

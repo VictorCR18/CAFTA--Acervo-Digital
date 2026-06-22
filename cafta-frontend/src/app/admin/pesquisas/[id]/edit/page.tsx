@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PesquisaForm from "@/components/PesquisaForm";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 import type { Pesquisa } from "@/types";
 import Link from "next/link";
 

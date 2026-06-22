@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CATEGORIAS_ACERVO } from "@/lib/constants";
 import type { CategoriaAcervo } from "@/types";
 import { usePendingFiles } from "@/lib/usePendingFiles";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 interface PendingFile {
   id: string;
