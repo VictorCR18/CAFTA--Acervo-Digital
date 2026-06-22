@@ -62,8 +62,8 @@ export const loginHandler = asyncHandler(
     // Set the token in an HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // HTTPS in production
-      sameSite: "lax",
+      secure: true, // HTTPS in production
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
@@ -79,8 +79,8 @@ export const logoutHandler = asyncHandler(
     // Clear the token cookie
     res.cookie("token", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       expires: new Date(0), // Expire immediately
     });
 

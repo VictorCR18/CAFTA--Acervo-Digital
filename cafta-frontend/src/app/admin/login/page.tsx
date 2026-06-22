@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -12,30 +12,19 @@ export default function AdminLogin() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      const res = await api.post("/api/admin/login", {
-        body: JSON.stringify({ password }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-      } else {
-        // Login successful, redirect to admin dashboard
-        router.push("/admin");
-      }
-    } catch (err) {
-      setError("Connection error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    await api.post("/api/admin/login", { password });
+    router.push("/admin");
+  } catch (err: any) {
+    setError(err.response?.data?.error || "Erro de conexão. Tente novamente.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Auto-login in development for easier testing
   useEffect(() => {

@@ -35,6 +35,7 @@ export function createApp() {
       },
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
     }),
   );
 
