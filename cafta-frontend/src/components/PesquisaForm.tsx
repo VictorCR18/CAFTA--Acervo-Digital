@@ -18,10 +18,7 @@ type PesquisaFormState = {
   destaque: boolean;
 };
 
-export default function PesquisaForm({
-  initialData,
-  onSubmitSuccess,
-}: PesquisaFormProps) {
+export default function PesquisaForm({ initialData, onSubmitSuccess }: PesquisaFormProps) {
   const [formData, setFormData] = useState<PesquisaFormState>(() => {
     if (initialData) {
       return {
@@ -35,76 +32,38 @@ export default function PesquisaForm({
         destaque: initialData.destaque ?? false,
       };
     }
-    return {
-      title: "",
-      authors: "",
-      year: new Date().getFullYear(),
-      link: "",
-      destaque: false,
-    };
+    return { title: "", authors: "", year: new Date().getFullYear(), link: "", destaque: false };
   });
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof PesquisaFormState, string>>
-  >({});
+
+  const [errors, setErrors] = useState<Partial<Record<keyof PesquisaFormState, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle form changes
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value as any }));
-    // Clear error for this field when user starts typing
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name as keyof typeof errors]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Validate form data
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof PesquisaFormState, string>> = {};
     const currentYear = new Date().getFullYear();
 
-    // Title validation
-    if (!formData.title.trim()) {
-      newErrors.title = "Título é obrigatório";
-    }
+    if (!formData.title.trim()) newErrors.title = "Título é obrigatório";
 
-    // Authors validation
-    const authorsArray = formData.authors
-      .split(",")
-      .map((author) => author.trim())
-      .filter((author) => author.length > 0);
-    if (authorsArray.length === 0) {
-      newErrors.authors = "Autores são obrigatórios (separados por vírgula)";
-    }
+    const authorsArray = formData.authors.split(",").map((a) => a.trim()).filter(Boolean);
+    if (authorsArray.length === 0) newErrors.authors = "Autores são obrigatórios (separados por vírgula)";
 
-    // Year validation
     const yearNum = parseInt(formData.year.toString());
-    if (
-      isNaN(yearNum) ||
-      !Number.isInteger(yearNum) ||
-      yearNum < 1900 ||
-      yearNum > currentYear
-    ) {
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > currentYear) {
       newErrors.year = `Ano deve ser um número inteiro entre 1900 e ${currentYear}`;
     }
 
-    // Link validation (optional, but if provided must be valid URL)
     if (formData.link.trim()) {
-      const linkValue = formData.link.trim();
-      const urlPattern = new RegExp(
-        "^(https?:\\/\\/)?" + // protocol
-          "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain
-          "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip
-          "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
-          "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
-          "(\\#[-a-z\\d_]*)?$", // fragment
-        "i",
-      );
-      if (!urlPattern.test(linkValue)) {
+      const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i;
+      if (!urlPattern.test(formData.link.trim())) {
         newErrors.link = "Link deve ser uma URL válida";
       }
     }
@@ -113,52 +72,28 @@ export default function PesquisaForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     setIsLoading(true);
 
     try {
-      // Prepare data for submission - map to backend expected format
       const pesquisaData = {
         titulo: formData.title.trim(),
-        autores: formData.authors
-          .split(",")
-          .map((author) => author.trim())
-          .filter((author) => author.length > 0),
+        autores: formData.authors.split(",").map((a) => a.trim()).filter(Boolean),
         ano: parseInt(formData.year.toString()),
         link: formData.link.trim() || undefined,
         destaque: formData.destaque,
       };
 
-      // Determine if we're creating or updating
       const isUpdate = !!formData.id;
-      const endpoint = isUpdate
-        ? `/api/pesquisas/${formData.id}`
-        : `/api/pesquisas`;
-      const method = isUpdate ? "PATCH" : "POST";
+      const endpoint = isUpdate ? `/api/pesquisas/${formData.id}` : `/api/pesquisas`;
 
-      // Make the API call
-      const response = await api[method.toLowerCase() as keyof typeof api](endpoint, {
-        method,
-        body: JSON.stringify(pesquisaData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const { data: result } = isUpdate
+        ? await api.patch(endpoint, pesquisaData)
+        : await api.post(endpoint, pesquisaData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error ?? "Erro ao enviar a pesquisa.");
-      }
-
-      const result = await response.json();
-
-      // Map backend response to frontend Pesquisa format
       const submittedPesquisa: Pesquisa = {
         title: result.data.titulo,
         id: result.data.id,
@@ -169,24 +104,14 @@ export default function PesquisaForm({
         destaque: result.data.destaque,
       };
 
-      // Call onSuccess callback if provided
-      if (onSubmitSuccess) {
-        onSubmitSuccess(submittedPesquisa);
-      }
-    } catch (err) {
+      if (onSubmitSuccess) onSubmitSuccess(submittedPesquisa);
+    } catch (err: any) {
       console.error("[PesquisaForm] Submit error:", err);
-      // Show error to user
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Falha ao enviar. Por favor, tente novamente.",
-      );
+      alert(err.response?.data?.error || "Falha ao enviar. Por favor, tente novamente.");
     } finally {
       setIsLoading(false);
     }
   };
-
-
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white/5 rounded-lg shadow-md">
@@ -195,159 +120,74 @@ export default function PesquisaForm({
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="title" className="block mb-2 text-white font-medium">
-            Título
-          </label>
+          <label htmlFor="title" className="block mb-2 text-white font-medium">Título</label>
           <input
-            id="title"
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
+            id="title" type="text" name="title" value={formData.title} onChange={handleChange} required
             className="block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             placeholder="Digite o título"
-            required
           />
-          {errors.title && (
-            <p className="mt-1 text-red-400 text-sm">{errors.title}</p>
-          )}
+          {errors.title && <p className="mt-1 text-red-400 text-sm">{errors.title}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="authors"
-            className="block mb-2 text-white font-medium"
-          >
-            Autores (separados por vírgula)
-          </label>
+          <label htmlFor="authors" className="block mb-2 text-white font-medium">Autores (separados por vírgula)</label>
           <input
-            id="authors"
-            type="text"
-            name="authors"
-            value={formData.authors}
-            onChange={handleChange}
+            id="authors" type="text" name="authors" value={formData.authors} onChange={handleChange} required
             className="block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             placeholder="Ex: Autor Um, Autor Dois, Autor Três"
-            required
           />
-          {errors.authors && (
-            <p className="mt-1 text-red-400 text-sm">{errors.authors}</p>
-          )}
+          {errors.authors && <p className="mt-1 text-red-400 text-sm">{errors.authors}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="year" className="block mb-2 text-white font-medium">
-              Ano
-            </label>
+            <label htmlFor="year" className="block mb-2 text-white font-medium">Ano</label>
             <input
-              id="year"
-              type="number"
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
+              id="year" type="number" name="year" value={formData.year} onChange={handleChange} required
+              min="1900" max={new Date().getFullYear()}
               className="block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-              min="1900"
-              max={new Date().getFullYear()}
-              required
             />
-            {errors.year && (
-              <p className="mt-1 text-red-400 text-sm">{errors.year}</p>
-            )}
+            {errors.year && <p className="mt-1 text-red-400 text-sm">{errors.year}</p>}
           </div>
 
           <div>
-            <label htmlFor="link" className="block mb-2 text-white font-medium">
-              Link (opcional)
-            </label>
+            <label htmlFor="link" className="block mb-2 text-white font-medium">Link (opcional)</label>
             <input
-              id="link"
-              type="text"
-              name="link"
-              value={formData.link}
-              onChange={handleChange}
+              id="link" type="text" name="link" value={formData.link} onChange={handleChange}
               className="block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
               placeholder="https://exemplo.com/pesquisa"
             />
-            {errors.link && (
-              <p className="mt-1 text-red-400 text-sm">{errors.link}</p>
-            )}
+            {errors.link && <p className="mt-1 text-red-400 text-sm">{errors.link}</p>}
           </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="destaque"
-            className="block mb-2 text-white font-medium"
-          >
-            Destaque
-          </label>
+        <div className="flex items-center gap-3">
           <input
-            id="destaque"
-            type="checkbox"
-            name="destaque"
-            checked={formData.destaque}
-            onChange={handleChange}
+            id="destaque" type="checkbox" name="destaque" checked={formData.destaque} onChange={handleChange}
             className="h-4 w-4 text-white bg-white/10 rounded focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark"
           />
-          {errors.destaque && (
-            <p className="mt-1 text-red-400 text-sm">{errors.destaque}</p>
-          )}
+          <label htmlFor="destaque" className="text-white font-medium">Destaque</label>
+          {errors.destaque && <p className="text-red-400 text-sm">{errors.destaque}</p>}
         </div>
 
         <div className="flex justify-end">
           <button
-            type="submit"
-            disabled={isLoading}
-            className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            type="submit" disabled={isLoading}
+            className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  ></path>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="5"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
                 Salvando...
               </>
-            ) : (
-              <>
-                Salvar
-                <svg
-                  className="ml-2 h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3l2.037 2.038c1.388 1.389 3.636 1.39 5.025.049l8.604-8.603c1.389-1.388 1.389-3.637-.048-5.025L12.038 3.038c1.389-1.388 3.636-1.389 5.025-.049l2.038 2.037c1.388 1.389 1.388 3.637-.049 5.024L3.038 12.038c-1.388 1.389-3.636 1.389-5.025.049z"
-                  ></path>
-                </svg>
-              </>
-            )}
+            ) : "Salvar"}
           </button>
           <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="ml-4 flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-primary/50 hover:bg-cafta-primary/70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button" onClick={() => window.history.back()}
+            className="ml-4 flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-primary/50 hover:bg-cafta-primary/70 transition-colors"
           >
             Voltar
           </button>

@@ -20,16 +20,8 @@ export default function EditPesquisaPage() {
       setError(null);
 
       try {
-        // Fetch pesquisa from backend API
-        const response = await api.get(`/api/pesquisas/${id}`);
+        const { data: pesquisaData } = await api.get(`/api/pesquisas/${id}`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const pesquisaData = await response.json();
-
-        // Map backend response to frontend Pesquisa format
         const frontendPesquisa: Pesquisa = {
           title: pesquisaData.titulo,
           id: pesquisaData.id,
@@ -37,33 +29,24 @@ export default function EditPesquisaPage() {
           autores: pesquisaData.autores,
           ano: pesquisaData.ano,
           link: pesquisaData.link,
-          destaque: pesquisaData.destaque
+          destaque: pesquisaData.destaque,
         };
 
         setPesquisa(frontendPesquisa);
-      } catch (err) {
-        console.error('[EditPesquisaPage] Error fetching pesquisa:', err);
-        setError(err instanceof Error ? err.message : 'Erro ao carregar pesquisa');
+      } catch (err: any) {
+        console.error("[EditPesquisaPage] Error fetching pesquisa:", err);
+        setError(err.response?.data?.error || "Erro ao carregar pesquisa");
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchPesquisa();
-    }
-  }, [id, router]);
+    if (id) fetchPesquisa();
+  }, [id]);
 
   const handleSubmitSuccess = async (updatedPesquisa: Pesquisa) => {
     try {
-      // Map frontend Pesquisa format to backend UpdatePesquisaBody format
-      const updateData: Partial<{
-        titulo: string
-        autores: string[]
-        ano: number
-        link?: string
-        destaque?: boolean
-      }> = {};
+      const updateData: Record<string, any> = {};
 
       if (updatedPesquisa.titulo !== undefined) updateData.titulo = updatedPesquisa.titulo;
       if (updatedPesquisa.autores !== undefined) updateData.autores = updatedPesquisa.autores;
@@ -71,22 +54,11 @@ export default function EditPesquisaPage() {
       if (updatedPesquisa.link !== undefined) updateData.link = updatedPesquisa.link;
       if (updatedPesquisa.destaque !== undefined) updateData.destaque = updatedPesquisa.destaque;
 
-      const response = await api.patch(`/api/pesquisas/${id}`, {
-        body: JSON.stringify(updateData),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Redirect to pesquisas list on success
+      await api.patch(`/api/pesquisas/${id}`, updateData);
       router.push("/admin/pesquisas");
-    } catch (err) {
-      console.error('[EditPesquisaPage] Error updating pesquisa:', err);
-      setError(err instanceof Error ? err.message : 'Erro ao atualizar pesquisa');
+    } catch (err: any) {
+      console.error("[EditPesquisaPage] Error updating pesquisa:", err);
+      setError(err.response?.data?.error || "Erro ao atualizar pesquisa");
     }
   };
 
@@ -116,7 +88,6 @@ export default function EditPesquisaPage() {
 
   return (
     <div className="min-h-screen bg-cafta-dark">
-      {/* Header */}
       <div className="bg-cafta-primary/50 border-b border-white/10">
         <div className="container mx-auto px-4 md:px-6 py-6">
           <div className="flex items-center justify-between">
@@ -127,16 +98,10 @@ export default function EditPesquisaPage() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/admin/pesquisas"
-                className="text-sm font-medium text-white hover:text-cafta-gold"
-              >
+              <Link href="/admin/pesquisas" className="text-sm font-medium text-white hover:text-cafta-gold">
                 Voltar às pesquisas
               </Link>
-              <Link
-                href="/"
-                className="text-sm font-medium text-white hover:text-cafta-gold"
-              >
+              <Link href="/" className="text-sm font-medium text-white hover:text-cafta-gold">
                 Voltar ao site
               </Link>
             </div>
@@ -144,18 +109,8 @@ export default function EditPesquisaPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 md:px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Editar Pesquisa</h1>
-          <p className="mt-2 text-sm text-white/60">
-            Atualize os detalhes de "{pesquisa.titulo}"
-          </p>
-        </div>
-        <PesquisaForm
-          initialData={pesquisa}
-          onSubmitSuccess={handleSubmitSuccess}
-        />
+        <PesquisaForm initialData={pesquisa} onSubmitSuccess={handleSubmitSuccess} />
       </div>
     </div>
   );

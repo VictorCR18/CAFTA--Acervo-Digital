@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import type { AcervoTipo, UploadResponse, UploadError } from '@/types'
+import type { AcervoTipo, UploadResponse } from '@/types'
 import { formatFileSize } from '@/lib/utils'
 import { UPLOAD_MAX_SIZE_MB } from '@/lib/constants'
 import api from '@/lib/api'
@@ -18,13 +18,11 @@ export default function UploadForm() {
   const [titulo, setTitulo] = useState('')
   const [tipo, setTipo] = useState<AcervoTipo | ''>('')
   const [arquivo, setArquivo] = useState<File | null>(null)
-  // Novos campos descritivos
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [historicalPeriod, setHistoricalPeriod] = useState('')
   const [authorship, setAuthorship] = useState('')
   const [publicationDate, setPublicationDate] = useState('')
-
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -63,7 +61,6 @@ export default function UploadForm() {
     formData.append('titulo', titulo.trim())
     formData.append('tipo', tipo)
     formData.append('arquivo', arquivo)
-    // Adicionando os novos campos descritivos
     formData.append('description', description.trim())
     formData.append('categoryId', categoryId.trim())
     formData.append('historicalPeriod', historicalPeriod.trim())
@@ -71,31 +68,22 @@ export default function UploadForm() {
     formData.append('publicationDate', publicationDate)
 
     try {
-      // Use our api utility for POST request with FormData
-      const response = await api.post('/api/midias', {
-        body: formData
+      const { data } = await api.post('/api/midias', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error ?? 'Erro ao enviar o arquivo.')
-      }
-
-      const data: UploadResponse = await response.json()
 
       setStatus('success')
       setMessage(data.message ?? 'Arquivo enviado com sucesso!')
       reset()
-    } catch (err) {
+    } catch (err: any) {
       console.error('[UploadForm] Error uploading file:', err)
       setStatus('error')
-      setMessage(err instanceof Error ? err.message : 'Erro de conexão. Tente novamente.')
+      setMessage(err.response?.data?.error || 'Erro de conexão. Tente novamente.')
     }
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
-      {/* Status banner */}
       {status !== 'idle' && status !== 'loading' && (
         <div
           role="alert"
@@ -109,154 +97,96 @@ export default function UploadForm() {
         </div>
       )}
 
-      {/* Título */}
       <div>
         <label htmlFor="titulo" className="label-cafta">
           Título <span className="text-red-400">*</span>
         </label>
         <input
-          id="titulo"
-          type="text"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
+          id="titulo" type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)}
           placeholder="Ex: Trabalho sobre a Revolução Farroupilha"
-          className="input-cafta"
-          required
-          disabled={status === 'loading'}
+          className="input-cafta" required disabled={status === 'loading'}
         />
       </div>
 
-      {/* Tipo */}
       <div>
         <label htmlFor="tipo" className="label-cafta">
           Tipo de conteúdo <span className="text-red-400">*</span>
         </label>
         <select
-          id="tipo"
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value as AcervoTipo)}
-          className="input-cafta"
-          required
-          disabled={status === 'loading'}
+          id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value as AcervoTipo)}
+          className="input-cafta" required disabled={status === 'loading'}
         >
           <option value="" disabled>Selecione uma categoria</option>
           {TIPO_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
       </div>
 
-      {/* Descrição */}
       <div>
-        <label htmlFor="description" className="label-cafta">
-          Descrição
-        </label>
+        <label htmlFor="description" className="label-cafta">Descrição</label>
         <textarea
-          id="description"
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          id="description" rows={3} value={description} onChange={(e) => setDescription(e.target.value)}
           placeholder="Descreva detalhadamente o conteúdo do arquivo..."
-          className="input-cafta"
-          disabled={status === 'loading'}
+          className="input-cafta" disabled={status === 'loading'}
         />
       </div>
 
-      {/* Categoria Adicional */}
       <div>
-        <label htmlFor="categoryId" className="label-cafta">
-          Categoria (opcional)
-        </label>
+        <label htmlFor="categoryId" className="label-cafta">Categoria (opcional)</label>
         <input
-          id="categoryId"
-          type="text"
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
+          id="categoryId" type="text" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
           placeholder="Ex: Documentos Históricos, Fotografias Antigas, etc."
-          className="input-cafta"
-          disabled={status === 'loading'}
+          className="input-cafta" disabled={status === 'loading'}
         />
       </div>
 
-      {/* Período Histórico */}
       <div>
-        <label htmlFor="historicalPeriod" className="label-cafta">
-          Período Histórico (opcional)
-        </label>
+        <label htmlFor="historicalPeriod" className="label-cafta">Período Histórico (opcional)</label>
         <input
-          id="historicalPeriod"
-          type="text"
-          value={historicalPeriod}
-          onChange={(e) => setHistoricalPeriod(e.target.value)}
+          id="historicalPeriod" type="text" value={historicalPeriod} onChange={(e) => setHistoricalPeriod(e.target.value)}
           placeholder="Ex: Império, Primeira República, Estado Novo..."
-          className="input-cafta"
-          disabled={status === 'loading'}
+          className="input-cafta" disabled={status === 'loading'}
         />
       </div>
 
-      {/* Autoria */}
       <div>
-        <label htmlFor="authorship" className="label-cafta">
-          Autoria / Responsabilidade (opcional)
-        </label>
+        <label htmlFor="authorship" className="label-cafta">Autoria / Responsabilidade (opcional)</label>
         <input
-          id="authorship"
-          type="text"
-          value={authorship}
-          onChange={(e) => setAuthorship(e.target.value)}
+          id="authorship" type="text" value={authorship} onChange={(e) => setAuthorship(e.target.value)}
           placeholder="Ex: João Silva, Maria Oliveira et al."
-          className="input-cafta"
-          disabled={status === 'loading'}
+          className="input-cafta" disabled={status === 'loading'}
         />
       </div>
 
-      {/* Data de Publicação */}
       <div>
-        <label htmlFor="publicationDate" className="label-cafta">
-          Data de Publicação Original (opcional)
-        </label>
+        <label htmlFor="publicationDate" className="label-cafta">Data de Publicação Original (opcional)</label>
         <input
-          id="publicationDate"
-          type="date"
-          value={publicationDate}
-          onChange={(e) => setPublicationDate(e.target.value)}
-          className="input-cafta"
-          disabled={status === 'loading'}
+          id="publicationDate" type="date" value={publicationDate} onChange={(e) => setPublicationDate(e.target.value)}
+          className="input-cafta" disabled={status === 'loading'}
         />
       </div>
 
-      {/* Arquivo */}
       <div>
         <label htmlFor="arquivo" className="label-cafta">
           Arquivo <span className="text-red-400">*</span>
         </label>
         <input
-          id="arquivo"
-          ref={fileRef}
-          type="file"
+          id="arquivo" ref={fileRef} type="file"
           onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
-          className="input-cafta file:mr-3 file:py-1 file:px-3 file:rounded-sm file:border-0
-                     file:text-xs file:font-semibold file:bg-cafta-gold/20 file:text-cafta-gold
-                     hover:file:bg-cafta-gold/30 cursor-pointer"
-          required
-          disabled={status === 'loading'}
+          className="input-cafta file:mr-3 file:py-1 file:px-3 file:rounded-sm file:border-0 file:text-xs file:font-semibold file:bg-cafta-gold/20 file:text-cafta-gold hover:file:bg-cafta-gold/30 cursor-pointer"
+          required disabled={status === 'loading'}
         />
         {arquivo && (
           <p className="mt-1.5 text-white/40 text-xs">
             {arquivo.name} — {formatFileSize(arquivo.size)}
           </p>
         )}
-        <p className="mt-1.5 text-white/30 text-xs">
-          Tamanho máximo: {UPLOAD_MAX_SIZE_MB} MB
-        </p>
+        <p className="mt-1.5 text-white/30 text-xs">Tamanho máximo: {UPLOAD_MAX_SIZE_MB} MB</p>
       </div>
 
-      {/* Submit */}
       <button
-        type="submit"
-        disabled={status === 'loading'}
+        type="submit" disabled={status === 'loading'}
         className="btn-cafta-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
       >
         {status === 'loading' ? (
@@ -267,9 +197,7 @@ export default function UploadForm() {
             </svg>
             Enviando…
           </>
-        ) : (
-          'Enviar para o acervo'
-        )}
+        ) : 'Enviar para o acervo'}
       </button>
     </form>
   )
