@@ -1,10 +1,12 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱  Inserindo dados de exemplo...')
 
+  // 1. Inserindo as pesquisas
   await prisma.pesquisa.createMany({
     skipDuplicates: true,
     data: [
@@ -39,6 +41,20 @@ async function main() {
         destaque: false,
       },
     ],
+  })
+
+  // 2. Criando o Administrador padrão
+  // Define uma senha padrão para o primeiro acesso (ex: cafta2026)
+  const senhaPadrao = 'cafta2026'
+  const hashedPassword = await bcrypt.hash(senhaPadrao, 10)
+
+  await prisma.admin.upsert({
+    where: { username: 'admin' },
+    update: {}, // Se já existir, não altera nada
+    create: {
+      username: 'admin',
+      password: hashedPassword,
+    },
   })
 
   console.log('✅  Seed concluído.')

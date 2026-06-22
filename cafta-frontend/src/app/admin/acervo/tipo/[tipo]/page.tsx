@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAcervoItems } from "@/lib/useAcervoItems";
 import { labelForTipo, actionLabelForTipo } from "@/lib/utils";
 import type { AcervoTipo, ArquivoAcervo } from "@/types";
+import { api } from "@/lib/api";
 
 export default function AcervoTipoPage() {
   const params = useParams<{ tipo: string }>();
@@ -25,9 +26,7 @@ export default function AcervoTipoPage() {
   const handleDelete = async (id: string) => {
     try {
       // Call backend API to delete the item
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/midias/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await api.delete(`/api/midias/${id}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

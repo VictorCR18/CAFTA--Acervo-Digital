@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { NAV_ITEMS } from './../../lib/constants'
+import { api } from "@/lib/api";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -43,7 +44,7 @@ export default function Navbar() {
   useEffect(() => {
     async function fetchPendingCount() {
       try {
-        const res = await fetch('/api/admin/pending-count')
+        const res = await api.get('/api/admin/pending-count')
         if (res.ok) {
           const data = await res.json()
           setPendingCount(data.count || 0)

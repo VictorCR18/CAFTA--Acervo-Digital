@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { api } from "@/lib/api";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
@@ -19,12 +20,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     // Check if user is authenticated by calling the auth status API
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/admin/login', {
-          method: 'GET',
+        const res = await api.get('/api/admin/login', {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // Important for sending cookies
+          credentials: 'include'
         })
 
         if (!res.ok) {

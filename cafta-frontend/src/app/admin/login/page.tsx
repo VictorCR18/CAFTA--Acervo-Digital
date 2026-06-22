@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -16,10 +17,9 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await api.post("/api/admin/login", {
         body: JSON.stringify({ password }),
+        headers: { "Content-Type": "application/json" },
       });
 
       const data = await res.json();

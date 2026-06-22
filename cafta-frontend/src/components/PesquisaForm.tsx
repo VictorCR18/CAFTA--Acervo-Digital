@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Pesquisa } from "@/types/index";
+import { api } from "@/lib/api";
 
 interface PesquisaFormProps {
   initialData?: Pesquisa;
@@ -142,7 +143,7 @@ export default function PesquisaForm({
       const method = isUpdate ? "PATCH" : "POST";
 
       // Make the API call
-      const response = await apiFetch(endpoint, {
+      const response = await api[method.toLowerCase() as keyof typeof api](endpoint, {
         method,
         body: JSON.stringify(pesquisaData),
         headers: {
@@ -185,57 +186,7 @@ export default function PesquisaForm({
     }
   };
 
-  // Helper function to make API calls (similar to what's in lib/api.ts)
-  const apiFetch = async (
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<Response> => {
-    const baseUrl = (() => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (apiUrl) return apiUrl.endsWith("/") ? apiUrl.slice(0, -1) : apiUrl;
 
-      if (process.env.NODE_ENV === "production") {
-        return ""; // Relative URLs in production
-      }
-
-      return "http://localhost:4000"; // Development fallback
-    })();
-
-    const url = `${baseUrl}${endpoint}`;
-
-    const headers = new Headers(options.headers ?? {});
-
-    // Add credentials for same-origin requests (for auth cookies)
-    const isSameOrigin =
-      !getApiBaseUrl() ||
-      (typeof window !== "undefined" &&
-        window.location.origin === getApiBaseUrl());
-
-    if (isSameOrigin && !headers.has("Credentials") && !options.credentials) {
-      options.credentials = "include";
-    }
-
-    const fetchOptions: RequestInit = {
-      ...options,
-      headers,
-    };
-
-    return fetch(url, fetchOptions);
-  };
-
-  // Helper to get API base URL (same as in lib/api.ts)
-  const getApiBaseUrl = (): string => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl) {
-      return apiUrl.endsWith("/") ? apiUrl.slice(0, -1) : apiUrl;
-    }
-
-    if (process.env.NODE_ENV === "production") {
-      return "";
-    }
-
-    return "http://localhost:4000";
-  };
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white/5 rounded-lg shadow-md">

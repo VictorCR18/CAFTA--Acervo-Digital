@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAcervoItems } from "@/lib/useAcervoItems";
 import { CATEGORIAS_ACERVO } from "@/lib/constants";
+import { api } from "@/lib/api";
 
 export default function AcervoPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +21,7 @@ export default function AcervoPage() {
       try {
         const tipos: ('imagens' | 'videos' | 'artigos')[] = ['imagens', 'videos', 'artigos'];
         const countsPromises = tipos.map(async (tipo) => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/midias?tipo=${tipo}&status=ativo`);
+          const response = await api.get(`/api/midias?tipo=${tipo}&status=ativo`);
           if (!response.ok) throw new Error(`Failed to fetch count for ${tipo}`);
           const data = await response.json();
           return [tipo, data.total || 0];
@@ -54,9 +55,7 @@ export default function AcervoPage() {
   const handleDelete = async (id: string) => {
     try {
       // Call backend API to delete the item
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/midias/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await api.delete(`/api/midias/${id}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -78,7 +77,7 @@ export default function AcervoPage() {
     try {
       const tipos: ('imagens' | 'videos' | 'artigos')[] = ['imagens', 'videos', 'artigos'];
       const countsPromises = tipos.map(async (tipo) => {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/midias?tipo=${tipo}&status=ativo`);
+        const response = await api.get(`/api/midias?tipo=${tipo}&status=ativo`);
         if (!response.ok) throw new Error(`Failed to fetch count for ${tipo}`);
         const data = await response.json();
         return [tipo, data.total || 0];

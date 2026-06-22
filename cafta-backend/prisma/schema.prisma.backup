@@ -73,14 +73,3 @@ model Pesquisa {
   @@index([destaque])
   @@map("pesquisas")
 }
-
-/// Administrador do sistema
-model Admin {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  password  String   // senha hashada
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("admins")
-}

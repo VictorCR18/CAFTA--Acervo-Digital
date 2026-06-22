@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePendingFiles } from '@/lib/usePendingFiles'
 import { useAcervoItems } from '@/lib/useAcervoItems'
 import { usePesquisas } from '@/lib/usePesquisas'
+import { api } from "@/lib/api";
 
 export default function AdminDashboard() {
   const { pendingFiles, loading: pendingLoading, error: pendingError } = usePendingFiles()
@@ -69,8 +70,7 @@ export default function AdminDashboard() {
                 onClick={async (e) => {
                   e.preventDefault()
                   try {
-                    await fetch('/api/admin/logout', {
-                      method: 'POST',
+                    await api.post('/api/admin/logout', {
                       credentials: 'include',
                     })
                     // Redirect to login after logout

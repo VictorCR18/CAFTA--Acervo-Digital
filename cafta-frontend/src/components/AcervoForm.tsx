@@ -134,8 +134,7 @@ export default function AcervoForm({
 
       // Only make the API call if there's something to submit
       if (Object.keys(submissionData).length > 0 || !isUpdate) {
-        const response = await apiFetch(endpoint, {
-          method,
+        const response = await api[method.toLowerCase() as keyof typeof api](endpoint, {
           body: JSON.stringify(submissionData),
           headers: {
             'Content-Type': 'application/json'
@@ -172,69 +171,7 @@ export default function AcervoForm({
     }
   };
 
-  // Helper function to make API calls (similar to what's in lib/api.ts but simplified for form use)
-  const apiFetch = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
-    const baseUrl = (() => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (apiUrl) return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 
-      if (process.env.NODE_ENV === 'production') {
-        return ''; // Relative URLs in production
-      }
-
-      return 'http://localhost:4000'; // Development fallback
-    })();
-
-    const url = `${baseUrl}${endpoint}`;
-
-    const headers = new Headers(options.headers ?? {});
-
-    // Set Content-Type for JSON data (not for FormData)
-    if (
-      options.body &&
-      !(options.body instanceof FormData) &&
-      !(options.body instanceof URLSearchParams) &&
-      typeof options.body !== 'string'
-    ) {
-      if (!headers.has('Content-Type')) {
-        headers.set('Content-Type', 'application/json');
-      }
-
-      // Convert body to JSON if it's not already a string
-      if (typeof options.body !== 'string') {
-        options.body = JSON.stringify(options.body);
-      }
-    }
-
-    // Add credentials for same-origin requests
-    const isSameOrigin = !getApiBaseUrl() ||
-      (typeof window !== 'undefined' && window.location.origin === getApiBaseUrl());
-
-    if (isSameOrigin && !headers.has('Credentials') && !options.credentials) {
-      options.credentials = 'include';
-    }
-
-    const fetchOptions: RequestInit = {
-      ...options,
-      headers,
-    };
-
-    return fetch(url, fetchOptions);
-  };
-
-  // Helper to get API base URL (same as in lib/api.ts)
-  const getApiBaseUrl = (): string => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl) {
-      return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-    }
-
-    if (process.env.NODE_ENV === 'production') {
-      return '';
-    }
-
-    return 'http://localhost:4000';
-  };
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white/5 rounded-lg shadow-md">
