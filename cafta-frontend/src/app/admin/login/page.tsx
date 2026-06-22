@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
@@ -12,35 +12,22 @@ export default function AdminLogin() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    await api.post("/api/admin/login", { password });
-    router.push("/admin");
-  } catch (err: any) {
-    setError(err.response?.data?.error || "Erro de conexão. Tente novamente.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Auto-login in development for easier testing
-  useEffect(() => {
-    if (
-      typeof process !== "undefined" &&
-      process.env.NODE_ENV === "development"
-    ) {
-      // Auto-login after a short delay in development
-      const timer = setTimeout(() => {
-        // Simulate pressing Enter with any password
-        handleSubmit(new Event("submit") as unknown as React.FormEvent);
-      }, 1000);
-
-      return () => clearTimeout(timer);
+    try {
+      const { data } = await api.post("/api/admin/login", { password });
+      localStorage.setItem("admin_token", data.data.token);
+      router.push("/admin");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.error || "Erro de conexão. Tente novamente.",
+      );
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
 
   return (
     <div className="min-h-screen bg-cafta-dark flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -52,14 +39,6 @@ export default function AdminLogin() {
           <p className="mt-2 text-center text-sm text-white/60">
             Acesse a área administrativa
           </p>
-          {/* Development mode notice */}
-          {typeof process !== "undefined" &&
-            process.env.NODE_ENV === "development" && (
-              <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 text-red-400 text-sm rounded">
-                ⚠️ Modo de desenvolvimento: Autenticação desabilitada. Acesso
-                concedido automaticamente.
-              </div>
-            )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md bg-cafta-primary p-6">
@@ -81,10 +60,8 @@ export default function AdminLogin() {
                   disabled={loading}
                 />
               </div>
-
               {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
             </div>
-
             <div className="pt-4">
               <button
                 type="submit"
@@ -121,9 +98,7 @@ export default function AdminLogin() {
               </button>
             </div>
           </div>
-
           <p className="mt-6 text-center text-sm text-white/50">
-            {" "}
             <Link
               href="/"
               className="font-medium text-white hover:text-cafta-gold"

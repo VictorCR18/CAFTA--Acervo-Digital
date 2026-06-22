@@ -12,12 +12,12 @@ export const getPendingCountHandler = asyncHandler(
   async (_req: Request, res: Response) => {
     const count = await prisma.midia.count({
       where: {
-        status: 'processando'
-      }
-    })
+        status: "processando",
+      },
+    });
 
-    res.json({ success: true, data: { count } })
-  }
+    res.json({ success: true, data: { count } });
+  },
 );
 
 /** POST /api/admin/login
@@ -35,8 +35,8 @@ export const loginHandler = asyncHandler(
     // Find the admin user (we assume there is an admin with username 'admin')
     const admin = await prisma.admin.findFirst({
       where: {
-        username: "admin"
-      }
+        username: "admin",
+      },
     });
 
     if (!admin) {
@@ -56,19 +56,12 @@ export const loginHandler = asyncHandler(
     const token = jwt.sign(
       { adminId: admin.id, username: admin.username },
       process.env.JWT_SECRET as string,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     // Set the token in an HTTP-only cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, // HTTPS in production
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    });
-
-    res.json({ success: true, data: { message: "Login successful" } });
-  }
+    res.json({ success: true, data: { message: "Login successful", token } });
+  },
 );
 
 /** POST /api/admin/logout
@@ -85,7 +78,7 @@ export const logoutHandler = asyncHandler(
     });
 
     res.json({ success: true, data: { message: "Logged out" } });
-  }
+  },
 );
 
 /** PUT /api/admin/password
@@ -106,7 +99,7 @@ export const updatePasswordHandler = asyncHandler(
     }
 
     const admin = await prisma.admin.findUnique({
-      where: { id: adminId }
+      where: { id: adminId },
     });
 
     if (!admin) {
@@ -125,9 +118,9 @@ export const updatePasswordHandler = asyncHandler(
     // Update admin password
     await prisma.admin.update({
       where: { id: adminId },
-      data: { password: hashedPassword }
+      data: { password: hashedPassword },
     });
 
     res.json({ success: true, data: { message: "Password updated" } });
-  }
+  },
 );

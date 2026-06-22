@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePendingFiles } from '@/lib/usePendingFiles'
 import { useAcervoItems } from '@/lib/useAcervoItems'
 import { usePesquisas } from '@/lib/usePesquisas'
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 export default function AdminDashboard() {
   const { pendingFiles, loading: pendingLoading, error: pendingError } = usePendingFiles()

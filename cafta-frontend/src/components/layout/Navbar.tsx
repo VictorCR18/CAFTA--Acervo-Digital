@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { NAV_ITEMS } from './../../lib/constants'
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -42,27 +42,19 @@ export default function Navbar() {
 
   // Fetch pending count periodically
   useEffect(() => {
-    async function fetchPendingCount() {
-      try {
-        const res = await api.get('/api/admin/pending-count')
-        if (res.ok) {
-          const data = await res.json()
-          setPendingCount(data.count || 0)
-        }
-        // If 401 (unauthorized), we don't show count - that's fine
-      } catch (err) {
-        // Silently ignore errors - could be network, auth, etc.
-        // We don't want to spam console with fetch errors in navbar
-      }
+  async function fetchPendingCount() {
+    try {
+      const { data } = await api.get('/api/admin/pending-count')
+      setPendingCount(data.data?.count || 0)
+    } catch {
+      // Silently ignore — pode ser 401 (não autenticado) ou erro de rede
     }
+  }
 
-    // Fetch on mount
-    fetchPendingCount()
-
-    // Fetch every 30 seconds to update count
-    const interval = setInterval(fetchPendingCount, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  fetchPendingCount()
+  const interval = setInterval(fetchPendingCount, 30000)
+  return () => clearInterval(interval)
+}, [])
 
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
