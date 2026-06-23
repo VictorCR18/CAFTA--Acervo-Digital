@@ -4,6 +4,9 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [],
   },
+  experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
+  },
 };
 
 export default nextConfig;

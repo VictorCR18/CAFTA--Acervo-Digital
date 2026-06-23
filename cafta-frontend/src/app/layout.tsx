@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
-
+import { Provider } from "@/components/ui/provider"
 import './globals.css'
 
 const jakarta = Plus_Jakarta_Sans({
@@ -15,8 +15,7 @@ export const metadata: Metadata = {
     default: 'CAFTA — Acervo Digital de História',
     template: '%s | CAFTA',
   },
-  description:
-    'Acervo digital do Centro Acadêmico Frei Tito de Alencar — UFC. Fotos, vídeos e produções acadêmicas do curso de História.',
+  description: 'Acervo digital do Centro Acadêmico Frei Tito de Alencar — UFC. Fotos, vídeos e produções acadêmicas do curso de História.',
   keywords: ['CAFTA', 'UFC', 'História', 'acervo digital', 'Centro Acadêmico'],
   authors: [{ name: 'CAFTA — C. A. Frei Tito de Alencar' }],
   openGraph: {
@@ -40,8 +39,10 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="pt-BR" className={jakarta.className}>
-      <body className="min-h-screen bg-cafta-dark font-sans">{children}</body>
+    <html lang="pt-BR" className={jakarta.className} suppressHydrationWarning>
+      <body className="min-h-screen bg-cafta-dark font-sans">
+        <Provider>{children}</Provider>
+      </body>
     </html>
   )
 }

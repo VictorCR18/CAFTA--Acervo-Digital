@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { IconButton, InputGroup, Input } from "@chakra-ui/react";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,18 +50,50 @@ export default function AdminLogin() {
                 <label htmlFor="admin-password" className="sr-only">
                   Senha
                 </label>
-                <input
-                  id="admin-password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-white/20 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-white focus:border-white/30 focus:bg-white/10 sm:text-sm"
-                  placeholder="Senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                />
+                {/* ✅ Chakra v3: endElement no lugar de InputRightElement */}
+                <InputGroup
+                  endElement={
+                    <IconButton
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      variant="ghost"
+                      size="sm"
+                      color="whiteAlpha.600"
+                      _hover={{ color: "white", bg: "transparent" }}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <LuEyeOff /> : <LuEye />}
+                    </IconButton>
+                  }
+                >
+                  <Input
+                    id="admin-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    placeholder="Senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    style={{ appearance: "none" }}
+                    borderRadius="none"
+                    px={3}
+                    py={2}
+                    borderColor="whiteAlpha.300"
+                    bg="whiteAlpha.50"
+                    color="white"
+                    fontSize="sm"
+                    _placeholder={{ color: "whiteAlpha.400" }}
+                    _focus={{
+                      outline: "none",
+                      ring: "1px",
+                      ringColor: "white",
+                      borderColor: "whiteAlpha.400",
+                      bg: "whiteAlpha.100",
+                    }}
+                  />
+                </InputGroup>
               </div>
               {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
             </div>
@@ -83,12 +118,12 @@ export default function AdminLogin() {
                         r="10"
                         stroke="currentColor"
                         strokeWidth="5"
-                      ></circle>
+                      />
                       <path
                         className="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      ></path>
+                      />
                     </svg>
                     Entrando...
                   </>
@@ -99,10 +134,7 @@ export default function AdminLogin() {
             </div>
           </div>
           <p className="mt-6 text-center text-sm text-white/50">
-            <Link
-              href="/"
-              className="font-medium text-white hover:text-cafta-gold"
-            >
+            <Link href="/" className="font-medium text-white hover:text-cafta-gold">
               Voltar ao site
             </Link>
           </p>
