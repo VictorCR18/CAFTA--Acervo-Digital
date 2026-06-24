@@ -1,32 +1,6 @@
-import Image from 'next/image'
-import { CATEGORIAS_ACERVO } from '@/lib/constants'
-import type { CategoriaAcervo } from '@/types'
+import CategoriaCard from "@/components/ui/CategoriaCard";
 
-function CategoriaCard({ item }: { item: CategoriaAcervo }) {
-  return (
-    <article className="card-acervo group cursor-pointer">
-      {/* Image */}
-      <div className="relative aspect-[3/2] overflow-hidden">
-        <Image
-          src={item.imagemSrc}
-          alt={item.imagemAlt}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-cafta-dark/80 via-transparent to-transparent" />
-      </div>
-
-      {/* Info */}
-      <div className="p-5">
-        <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-cafta-gold transition-colors">
-          {item.titulo}
-        </h3>
-        <p className="text-white/50 text-sm">{item.descricao}</p>
-      </div>
-    </article>
-  )
-}
+import { CATEGORIAS_ACERVO } from "@/lib/constants";
 
 export default function AcervoSection() {
   return (
@@ -46,5 +20,5 @@ export default function AcervoSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

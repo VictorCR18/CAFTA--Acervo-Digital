@@ -22,12 +22,6 @@ export default function NewAcervoPage() {
   return (
     <div className="min-h-screen bg-cafta-dark p-6">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Add New Acervo Item</h1>
-          <p className="mt-2 text-sm text-white/60">
-            Fill out the form below to add a new item to the digital archive
-          </p>
-        </div>
         <AcervoForm initialData={initialData} onSubmitSuccess={handleSubmitSuccess} />
       </div>
     </div>

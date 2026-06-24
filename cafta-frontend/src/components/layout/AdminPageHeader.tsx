@@ -1,11 +1,12 @@
 import { LuArrowLeft } from "react-icons/lu";
-import Link from "next/link"; // Importando o Link do Next.js
+import Link from "next/link";
 
 interface AdminPageHeaderProps {
   title: string;
   description?: string;
   children?: React.ReactNode;
-  showBackButton?: boolean; // Define se o botão deve aparecer
+  showBackButton?: boolean;
+  backHref?: string; // <-- Nova propriedade opcional
 }
 
 export default function AdminPageHeader({
@@ -13,18 +14,18 @@ export default function AdminPageHeader({
   description,
   children,
   showBackButton = false,
+  backHref = "/admin", // <-- Padrão é /admin se não for informado
 }: AdminPageHeaderProps) {
   return (
     <header className="bg-cafta-primary/50 border-b border-white/10">
       <div className="container mx-auto px-4 md:px-6 py-6">
         <div className="flex items-center justify-between">
-          {/* Lado Esquerdo: Botão Voltar (Opcional) + Títulos */}
           <div className="flex items-center gap-4">
             {showBackButton && (
               <Link
-                href="/admin" // Redireciona diretamente para a rota /admin
+                href={backHref} // <-- Rota dinâmica aqui
                 className="flex items-center justify-center text-white/60 hover:text-white transition-colors p-2 -ml-2 rounded-md hover:bg-white/5"
-                aria-label="Voltar para o Painel Administrativo"
+                aria-label="Voltar para a página anterior"
               >
                 <LuArrowLeft className="w-6 h-6" />
               </Link>

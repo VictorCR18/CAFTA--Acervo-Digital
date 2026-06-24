@@ -4,17 +4,31 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePesquisas } from "@/lib/usePesquisas";
 import type { Pesquisa } from "@/types";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AdminPageHeader from "@/components/layout/AdminPageHeader";
+import FeedbackPopup from "@/components/ui/FeedbackPopup";
+import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal"; // <-- Novo Import
 
 export default function PesquisasPage() {
   const { data: pesquisas, loading, error, deletePesquisa } = usePesquisas();
   const [searchTerm, setSearchTerm] = useState("");
-  const router = useRouter();
   const pathname = usePathname();
 
-  // Filter pesquisas based on search term
+  // Estados de feedback e controle
+  const [popup, setPopup] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Filtragem
   const filteredPesquisas = (pesquisas || []).filter(
     (pesquisa): pesquisa is Pesquisa =>
       pesquisa !== null &&
@@ -23,22 +37,30 @@ export default function PesquisasPage() {
       pesquisa.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Tem certeza que deseja excluir esta pesquisa?")) {
-      try {
-        await deletePesquisa(id);
-        alert("Pesquisa excluída com sucesso!");
-      } catch (err) {
-        console.error("Delete error:", err);
-        alert("Falha ao excluir pesquisa. Por favor, tente novamente.");
-      }
+  const showPopup = (message: string, type: "success" | "error") => {
+    setPopup({ show: true, message, type });
+  };
+
+  const executeDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deletePesquisa(itemToDelete);
+      showPopup("Pesquisa excluída com sucesso!", "success");
+    } catch (err) {
+      console.error("Delete error:", err);
+      showPopup(
+        "Falha ao excluir pesquisa. Por favor, tente novamente.",
+        "error",
+      );
+    } finally {
+      setIsDeleting(false);
+      setItemToDelete(null);
     }
   };
 
-  if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
-
+  if (loading) return <LoadingSpinner fullScreen />;
   if (error) {
     return (
       <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
@@ -48,8 +70,7 @@ export default function PesquisasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cafta-dark">
-      {/* Header */}
+    <div className="min-h-screen bg-cafta-dark relative">
       <div className="bg-cafta-primary/50 border-b border-white/10">
         <AdminPageHeader
           title="Gerenciar Pesquisas"
@@ -58,9 +79,8 @@ export default function PesquisasPage() {
         />
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 md:px-6 py-8">
-        <div className="flex flex-wrap items-center gap-4 mb-6">
+        <div className="flex flex-wrap items-end gap-4 mb-6">
           <div className="flex-1 min-w-[200px]">
             <label
               htmlFor="search"
@@ -79,7 +99,7 @@ export default function PesquisasPage() {
           </div>
           <Link
             href="/admin/pesquisas/new"
-            className="flex-shrink-0 px-6 py-3 bg-cafta-gold text-white font-semibold rounded-sm text-sm tracking-wide hover:bg-cafta-gold-light hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-cafta-gold focus:ring-offset-2 focus:ring-offset-cafta-dark transition-colors"
+            className="flex-shrink-0 px-6 py-2 bg-cafta-gold text-white font-semibold rounded-sm text-sm tracking-wide hover:bg-cafta-gold-light hover:shadow-lg hover:-translate-y-0.5 transition-colors"
           >
             Nova Pesquisa
           </Link>
@@ -88,15 +108,6 @@ export default function PesquisasPage() {
         {filteredPesquisas.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-white/50">Nenhuma pesquisa encontrada</p>
-            {searchTerm ? (
-              <p className="text-white/40 text-sm mt-2">
-                Nenhuma pesquisa encontrada para "{searchTerm}"
-              </p>
-            ) : (
-              <p className="text-white/40 text-sm mt-2">
-                Nenhuma pesquisa cadastrada ainda
-              </p>
-            )}
           </div>
         ) : (
           <div className="space-y-6">
@@ -106,7 +117,6 @@ export default function PesquisasPage() {
                 className="bg-white/5 rounded-lg border border-white/10 p-6 hover:bg-white/10 transition-colors"
               >
                 <div className="flex items-start space-x-4">
-                  {/* Content */}
                   <div className="flex-1">
                     <h3 className="text-white font-semibold mb-2">
                       {pesquisa.title}
@@ -121,66 +131,21 @@ export default function PesquisasPage() {
                           Destaque
                         </span>
                       )}
-                      {pesquisa.link && (
-                        <span className="ml-3">
-                          <Link
-                            href={pesquisa.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-cafta-gold hover:text-white underline"
-                          >
-                            Link
-                          </Link>
-                        </span>
-                      )}
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex-shrink-0 flex space-x-3">
                     <Link
                       href={`/admin/pesquisas/${pesquisa.id}/edit`}
-                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-cafta-primary/20 text-white rounded hover:bg-cafta-primary/30 hover:text-white transition-colors"
+                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-cafta-primary/20 text-white rounded hover:bg-cafta-primary/30 transition-colors"
                     >
                       Editar
-                      <svg
-                        className="ml-1 w-3 h-3"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-                        ></path>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-3-1 2-2.5z"
-                        ></path>
-                      </svg>
                     </Link>
                     <button
-                      onClick={() => handleDelete(pesquisa.id)}
-                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 hover:text-red-500 transition-colors"
+                      onClick={() => setItemToDelete(pesquisa.id)}
+                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
                     >
                       Excluir
-                      <svg
-                        className="ml-1 w-3 h-3"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        ></path>
-                      </svg>
                     </button>
                   </div>
                 </div>
@@ -189,6 +154,24 @@ export default function PesquisasPage() {
           </div>
         )}
       </div>
+
+      {/* Uso do Componente de Modal Componentizado */}
+      <ConfirmDeleteModal
+        isOpen={!!itemToDelete}
+        title="Excluir Pesquisa?"
+        description="Essa ação não pode ser desfeita. A pesquisa será removida permanentemente do sistema."
+        isDeleting={isDeleting}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={executeDelete}
+      />
+
+      {popup.show && (
+        <FeedbackPopup
+          message={popup.message}
+          type={popup.type}
+          onClose={() => setPopup((prev) => ({ ...prev, show: false }))}
+        />
+      )}
     </div>
   );
 }

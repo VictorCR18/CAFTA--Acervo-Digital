@@ -152,11 +152,12 @@ export const uploadMidia = asyncHandler(async (req: Request, res: Response) => {
 // to get only approved items. Defaults to status='ativo' when no status provided.
 
 export const getMidias = asyncHandler(async (req: Request, res: Response) => {
-  const { tipo, status, search } = req.query as Record<string, string>;
+  const { tipo, status, search, categoryId } = req.query as Record<string, string>;
   const { page, limit } = parsePagination(req.query as Record<string, string>);
 
   const { rows, total } = await listMidias({
     tipo: tipo as MidiaTipo | undefined,
+    categoryId: categoryId,
     status: status as MidiaStatus | undefined,
     search,
     page,

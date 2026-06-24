@@ -25,6 +25,7 @@ export interface CreateMidiaInput {
 
 export interface ListMidiaFilters {
   tipo?: MidiaTipo
+  categoryId?: string
   status?: MidiaStatus
   search?: string
   page?: number
@@ -68,6 +69,7 @@ export async function listMidias(filters: ListMidiaFilters = {}): Promise<ListMi
   const where: Prisma.MidiaWhereInput = {
     status: filters.status ?? 'ativo',
     ...(filters.tipo && { tipo: filters.tipo }),
+    ...(filters.categoryId && { categoryId: filters.categoryId }),
     ...(filters.search && {
       titulo: { contains: filters.search, mode: 'insensitive' },
     }),

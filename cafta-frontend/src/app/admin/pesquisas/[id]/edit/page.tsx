@@ -7,36 +7,55 @@ import api from "@/lib/api";
 import type { Pesquisa } from "@/types";
 import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import FeedbackPopup from "@/components/ui/FeedbackPopup"; // <-- Importando o popup
 
 export default function EditPesquisaPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [pesquisa, setPesquisa] = useState<Pesquisa | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null); // Erros de carregamento inicial
+
+  // Estado para controlar o popup
+  const [popup, setPopup] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
+  const showPopup = (message: string, type: "success" | "error") => {
+    setPopup({ show: true, message, type });
+  };
 
   useEffect(() => {
     const fetchPesquisa = async () => {
       setLoading(true);
-      setError(null);
+      setFetchError(null);
 
       try {
-        const { data: pesquisaData } = await api.get(`/api/pesquisas/${id}`);
+        const response = await api.get(`/api/pesquisas/${id}`);
+
+        // CORREÇÃO AQUI: Garante que pega o objeto independentemente de como a API devolve
+        const pesquisaData = response.data.data || response.data;
 
         const frontendPesquisa: Pesquisa = {
-          title: pesquisaData.titulo,
           id: pesquisaData.id,
-          titulo: pesquisaData.titulo,
-          autores: pesquisaData.autores,
-          ano: pesquisaData.ano,
-          link: pesquisaData.link,
-          destaque: pesquisaData.destaque,
+          title: pesquisaData.titulo || pesquisaData.title || "", // Tratamento duplo
+          titulo: pesquisaData.titulo || pesquisaData.title || "",
+          autores: pesquisaData.autores || [],
+          ano: pesquisaData.ano || "",
+          link: pesquisaData.link || "",
+          destaque: pesquisaData.destaque || false,
         };
 
         setPesquisa(frontendPesquisa);
       } catch (err: any) {
         console.error("[EditPesquisaPage] Error fetching pesquisa:", err);
-        setError(err.response?.data?.error || "Erro ao carregar pesquisa");
+        setFetchError(err.response?.data?.error || "Erro ao carregar pesquisa");
       } finally {
         setLoading(false);
       }
@@ -55,16 +74,29 @@ export default function EditPesquisaPage() {
         updateData.autores = updatedPesquisa.autores;
       if (updatedPesquisa.ano !== undefined)
         updateData.ano = updatedPesquisa.ano;
-      if (updatedPesquisa.link !== undefined)
-        updateData.link = updatedPesquisa.link;
       if (updatedPesquisa.destaque !== undefined)
         updateData.destaque = updatedPesquisa.destaque;
 
+      // SOLUÇÃO: Só adiciona o link no payload se houver algum texto digitado.
+      // Se estiver vazio, a API simplesmente não recebe o campo e ignora a validação do link.
+      if (updatedPesquisa.link && updatedPesquisa.link.trim() !== "") {
+        updateData.link = updatedPesquisa.link.trim();
+      }
+
       await api.patch(`/api/pesquisas/${id}`, updateData);
-      router.push("/admin/pesquisas");
+
+      showPopup("Pesquisa atualizada com sucesso!", "success");
+
+      // Aguarda 2 segundos para exibir o popup antes de voltar
+      setTimeout(() => {
+        router.push("/admin/pesquisas");
+      }, 2000);
     } catch (err: any) {
       console.error("[EditPesquisaPage] Error updating pesquisa:", err);
-      setError(err.response?.data?.error || "Erro ao atualizar pesquisa");
+      showPopup(
+        err.response?.data?.error || "Erro ao atualizar pesquisa",
+        "error",
+      );
     }
   };
 
@@ -72,10 +104,11 @@ export default function EditPesquisaPage() {
     return <LoadingSpinner fullScreen />;
   }
 
-  if (error) {
+  // Mostra erro de tela inteira apenas se falhar ao carregar o item inicialmente
+  if (fetchError) {
     return (
       <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
-        <div className="text-red-400">{error}</div>
+        <div className="text-red-400">{fetchError}</div>
       </div>
     );
   }
@@ -89,7 +122,7 @@ export default function EditPesquisaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cafta-dark">
+    <div className="min-h-screen bg-cafta-dark relative">
       <div className="bg-cafta-primary/50 border-b border-white/10">
         <div className="container mx-auto px-4 md:px-6 py-6">
           <div className="flex items-center justify-between">
@@ -117,6 +150,15 @@ export default function EditPesquisaPage() {
           onSubmitSuccess={handleSubmitSuccess}
         />
       </div>
+
+      {/* Renderizando o Popup */}
+      {popup.show && (
+        <FeedbackPopup
+          message={popup.message}
+          type={popup.type}
+          onClose={() => setPopup((prev) => ({ ...prev, show: false }))}
+        />
+      )}
     </div>
   );
 }

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { AcervoItem, AcervoTipo } from "@/types";
 import { formatFileSize } from "@/lib/utils";
-import { UPLOAD_MAX_SIZE_MB } from "@/lib/constants";
+// Importamos o CATEGORIAS_ACERVO das constantes
+import { UPLOAD_MAX_SIZE_MB, CATEGORIAS_ACERVO } from "@/lib/constants";
 
 interface AcervoFormProps {
   initialData?: AcervoItem;
@@ -62,7 +63,7 @@ export default function AcervoForm({
     Partial<Record<keyof AcervoFormData, string>>
   >({});
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0); // Novo estado para a barra de progresso
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -88,7 +89,7 @@ export default function AcervoForm({
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -117,6 +118,8 @@ export default function AcervoForm({
 
     if (!formData.title.trim()) newErrors.title = "Título é obrigatório";
     if (!formData.tipo) newErrors.tipo = "Tipo é obrigatório";
+    // Torna a Categoria obrigatória
+    if (!formData.categoryId) newErrors.categoryId = "Categoria é obrigatória";
 
     if (!formData.id && !file) {
       newErrors.fileUrl = "Arquivo é obrigatório";
@@ -131,7 +134,7 @@ export default function AcervoForm({
     if (!validate()) return;
 
     setIsLoading(true);
-    setUploadProgress(0); // Reinicia o progresso
+    setUploadProgress(0);
     setUploadStatus("loading");
     setUploadMessage("");
 
@@ -149,12 +152,13 @@ export default function AcervoForm({
       payload.append("tipo", formData.tipo);
       if (file) payload.append("arquivo", file);
 
-      // Configuração do Axios para rastrear o progresso do upload
       const config = {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent: any) => {
           const total = progressEvent.total || 1;
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / total);
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / total,
+          );
           setUploadProgress(percentCompleted);
         },
       };
@@ -177,12 +181,10 @@ export default function AcervoForm({
       setUploadStatus("error");
       setUploadMessage(
         err.response?.data?.error ??
-          "Falha ao enviar. Por favor, tente novamente."
+          "Falha ao enviar. Por favor, tente novamente.",
       );
     } finally {
       setIsLoading(false);
-      // Mantém a barra de progresso em 100% visualmente se foi sucesso, 
-      // mas você pode resetar chamando setUploadProgress(0) caso queira que ela suma.
     }
   };
 
@@ -210,14 +212,33 @@ export default function AcervoForm({
                 : "bg-red-500/10 border-red-500/30 text-red-300"
             }`}
           >
-            {/* Ícone de Sucesso ou Erro */}
             {uploadStatus === "success" ? (
-              <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-5 h-5 mr-2 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             ) : (
-              <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5 mr-2 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             )}
             {uploadMessage}
@@ -314,7 +335,7 @@ export default function AcervoForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Categoria */}
+          {/* Categoria - Agora é um Select */}
           <div>
             <label
               htmlFor="categoryId"
@@ -322,21 +343,30 @@ export default function AcervoForm({
                 isPublic ? "label-cafta" : "block mb-2 text-white font-medium"
               }
             >
-              Categoria (opcional)
+              Categoria <span className="text-red-400">*</span>
             </label>
-            <input
+            <select
               id="categoryId"
               name="categoryId"
-              type="text"
               value={formData.categoryId}
               onChange={handleChange}
               disabled={isLoading}
               className={
                 isPublic
                   ? "input-cafta"
-                  : "block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10"
+                  : "block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 focus:ring-2 focus:ring-white"
               }
-            />
+            >
+              <option value="" disabled>Selecione uma categoria...</option>
+              {CATEGORIAS_ACERVO.map((cat) => (
+                <option key={cat.slug} value={cat.slug}>
+                  {cat.titulo}
+                </option>
+              ))}
+            </select>
+            {errors.categoryId && (
+              <p className="mt-1 text-red-400 text-sm">{errors.categoryId}</p>
+            )}
           </div>
 
           {/* Período Histórico */}
@@ -472,7 +502,9 @@ export default function AcervoForm({
         )}
 
         {/* Botões de Ação */}
-        <div className={`flex ${isPublic ? "flex-col" : "justify-end"} gap-4 mt-6`}>
+        <div
+          className={`flex ${isPublic ? "flex-col" : "justify-end"} gap-4 mt-6`}
+        >
           <button
             type="submit"
             disabled={isLoading}
@@ -485,10 +517,10 @@ export default function AcervoForm({
             {isLoading
               ? "Enviando..."
               : isPublic
-              ? "Enviar para o acervo"
-              : isEdit
-              ? "Atualizar Item"
-              : "Salvar Item"}
+                ? "Enviar para o acervo"
+                : isEdit
+                  ? "Atualizar Item"
+                  : "Salvar Item"}
           </button>
 
           {!isPublic && (

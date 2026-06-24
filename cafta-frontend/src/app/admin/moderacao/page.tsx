@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation"; 
+import { useRouter, usePathname } from "next/navigation";
 import { CATEGORIAS_ACERVO } from "@/lib/constants";
 import type { CategoriaAcervo } from "@/types";
 import { usePendingFiles } from "@/lib/usePendingFiles";
 import api from "@/lib/api";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AdminPageHeader from "@/components/layout/AdminPageHeader";
+import FeedbackPopup from "@/components/ui/FeedbackPopup"; // <-- Importando o novo componente
 
 interface PendingFile {
   id: string;
@@ -32,7 +33,6 @@ const tipoColors: Record<string, string> = {
 };
 
 export default function ModeracaoPage() {
-  // <-- Hooks inicializados
   const router = useRouter();
   const pathname = usePathname();
 
@@ -41,17 +41,33 @@ export default function ModeracaoPage() {
   const [loadingState, setLoadingState] = useState<boolean>(true);
   const [errorState, setErrorState] = useState<string | null>(null);
 
+  // <-- Estado para controlar o Popup
+  const [popup, setPopup] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
   useEffect(() => {
     setPendingFilesState(pendingFiles);
     setLoadingState(loading);
     setErrorState(error);
   }, [pendingFiles, loading, error]);
 
+  // Função auxiliar para exibir o popup
+  const showPopup = (message: string, type: "success" | "error") => {
+    setPopup({ show: true, message, type });
+  };
+
   async function handleView(url: string) {
     if (url) {
       window.open(url, "_blank");
     } else {
-      alert("URL não disponível para este arquivo");
+      showPopup("URL não disponível para este arquivo", "error");
     }
   }
 
@@ -60,10 +76,13 @@ export default function ModeracaoPage() {
       setLoadingState(true);
       await api.patch(`/api/midias/${id}/status`, { status: "ativo" });
       setPendingFilesState((prev) => prev.filter((file) => file.id !== id));
-      alert("Arquivo aprovado com sucesso!");
+      showPopup("Arquivo aprovado com sucesso!", "success"); // <-- Substituindo alert
     } catch (err: any) {
       console.error("[ModeracaoPage] Error approving file:", err);
-      alert(err.response?.data?.error || "Erro ao aprovar arquivo");
+      showPopup(
+        err.response?.data?.error || "Erro ao aprovar arquivo",
+        "error",
+      ); // <-- Substituindo alert
     } finally {
       setLoadingState(false);
     }
@@ -74,10 +93,13 @@ export default function ModeracaoPage() {
       setLoadingState(true);
       await api.patch(`/api/midias/${id}/status`, { status: "inativo" });
       setPendingFilesState((prev) => prev.filter((file) => file.id !== id));
-      alert("Arquivo rejeitado com sucesso!");
+      showPopup("Arquivo rejeitado com sucesso!", "success"); // <-- Substituindo alert
     } catch (err: any) {
       console.error("[ModeracaoPage] Error rejecting file:", err);
-      alert(err.response?.data?.error || "Erro ao rejeitar arquivo");
+      showPopup(
+        err.response?.data?.error || "Erro ao rejeitar arquivo",
+        "error",
+      ); // <-- Substituindo alert
     } finally {
       setLoadingState(false);
     }
@@ -105,7 +127,7 @@ export default function ModeracaoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cafta-dark">
+    <div className="min-h-screen bg-cafta-dark relative">
       <AdminPageHeader
         title="Aprovação de Mídia"
         description="Revise e aprove ou rejeite submissões de mídia"
@@ -120,6 +142,7 @@ export default function ModeracaoPage() {
           </span>
         </div>
       </AdminPageHeader>
+
       <div className="container mx-auto px-4 md:px-6 py-8">
         {pendingFilesState.length === 0 ? (
           <div className="text-center py-20">
@@ -313,6 +336,15 @@ export default function ModeracaoPage() {
           </div>
         )}
       </div>
+
+      {/* Renderização do Popup */}
+      {popup.show && (
+        <FeedbackPopup
+          message={popup.message}
+          type={popup.type}
+          onClose={() => setPopup((prev) => ({ ...prev, show: false }))}
+        />
+      )}
     </div>
   );
 }
