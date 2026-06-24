@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { IconButton, InputGroup, Input } from "@chakra-ui/react";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 
 export default function AdminLogin() {
@@ -14,7 +12,7 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -50,23 +48,8 @@ export default function AdminLogin() {
                 <label htmlFor="admin-password" className="sr-only">
                   Senha
                 </label>
-                {/* ✅ Chakra v3: endElement no lugar de InputRightElement */}
-                <InputGroup
-                  endElement={
-                    <IconButton
-                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      variant="ghost"
-                      size="sm"
-                      color="whiteAlpha.600"
-                      _hover={{ color: "white", bg: "transparent" }}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <LuEyeOff /> : <LuEye />}
-                    </IconButton>
-                  }
-                >
-                  <Input
+                <div className="relative">
+                  <input
                     id="admin-password"
                     name="password"
                     type={showPassword ? "text" : "password"}
@@ -76,31 +59,25 @@ export default function AdminLogin() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    style={{ appearance: "none" }}
-                    borderRadius="none"
-                    px={3}
-                    py={2}
-                    borderColor="whiteAlpha.300"
-                    bg="whiteAlpha.50"
-                    color="white"
-                    fontSize="sm"
-                    _placeholder={{ color: "whiteAlpha.400" }}
-                    _focus={{
-                      outline: "none",
-                      ring: "1px",
-                      ringColor: "white",
-                      borderColor: "whiteAlpha.400",
-                      bg: "whiteAlpha.100",
-                    }}
+                    className="block w-full px-3 py-2 text-sm text-white bg-white/5 border border-white/30 placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white focus:border-white/40 focus:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors appearance-none"
                   />
-                </InputGroup>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-white/60 hover:text-white transition-colors focus:outline-none"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                  </button>
+                </div>
               </div>
               {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
             </div>
             <div className="pt-4">
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-cafta-dark hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 disabled={loading}
               >
                 {loading ? (
@@ -133,11 +110,6 @@ export default function AdminLogin() {
               </button>
             </div>
           </div>
-          <p className="mt-6 text-center text-sm text-white/50">
-            <Link href="/" className="font-medium text-white hover:text-cafta-gold">
-              Voltar ao site
-            </Link>
-          </p>
         </form>
       </div>
     </div>

@@ -1,43 +1,42 @@
 "use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { usePesquisas } from '@/lib/usePesquisas'
-import type { Pesquisa } from '@/types'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import Link from "next/link";
+import { usePesquisas } from "@/lib/usePesquisas";
+import type { Pesquisa } from "@/types";
+import { useRouter, usePathname } from "next/navigation";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import AdminPageHeader from "@/components/layout/AdminPageHeader";
 
 export default function PesquisasPage() {
-  const { data: pesquisas, loading, error, deletePesquisa } = usePesquisas()
-  const [searchTerm, setSearchTerm] = useState('')
-  const router = useRouter()
+  const { data: pesquisas, loading, error, deletePesquisa } = usePesquisas();
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Filter pesquisas based on search term
-  const filteredPesquisas = (pesquisas || [])
-    .filter((pesquisa): pesquisa is Pesquisa =>
+  const filteredPesquisas = (pesquisas || []).filter(
+    (pesquisa): pesquisa is Pesquisa =>
       pesquisa !== null &&
       pesquisa !== undefined &&
-      typeof pesquisa.title === 'string' &&
-      pesquisa.title.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+      typeof pesquisa.title === "string" &&
+      pesquisa.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta pesquisa?')) {
+    if (window.confirm("Tem certeza que deseja excluir esta pesquisa?")) {
       try {
-        await deletePesquisa(id)
-        alert('Pesquisa excluída com sucesso!')
+        await deletePesquisa(id);
+        alert("Pesquisa excluída com sucesso!");
       } catch (err) {
-        console.error('Delete error:', err)
-        alert('Falha ao excluir pesquisa. Por favor, tente novamente.')
+        console.error("Delete error:", err);
+        alert("Falha ao excluir pesquisa. Por favor, tente novamente.");
       }
     }
-  }
+  };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
-      </div>
-    )
+    return <LoadingSpinner fullScreen />;
   }
 
   if (error) {
@@ -45,28 +44,18 @@ export default function PesquisasPage() {
       <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
         <div className="text-white">Erro ao carregar pesquisas</div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-cafta-dark">
       {/* Header */}
       <div className="bg-cafta-primary/50 border-b border-white/10">
-        <div className="container mx-auto px-4 md:px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Gerenciamento de Pesquisas</h1>
-              <p className="mt-1 text-sm text-white/60">
-                Visualize, edite e gerencie as publicações acadêmicas
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-sm font-medium text-white hover:text-cafta-gold">
-                Voltar ao site
-              </Link>
-            </div>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="Gerenciar Pesquisas"
+          description="Visualize, edite e gerencie as pesquisas acadêmicas"
+          showBackButton={pathname !== "/admin"}
+        />
       </div>
 
       {/* Main Content */}
@@ -98,9 +87,7 @@ export default function PesquisasPage() {
 
         {filteredPesquisas.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-white/50">
-              Nenhuma pesquisa encontrada
-            </p>
+            <p className="text-white/50">Nenhuma pesquisa encontrada</p>
             {searchTerm ? (
               <p className="text-white/40 text-sm mt-2">
                 Nenhuma pesquisa encontrada para "{searchTerm}"
@@ -125,12 +112,10 @@ export default function PesquisasPage() {
                       {pesquisa.title}
                     </h3>
                     <p className="text-white/80 text-sm mb-2">
-                      {pesquisa.autores.join(', ')}
+                      {pesquisa.autores.join(", ")}
                     </p>
                     <div className="flex items-center gap-4 mb-2 text-sm text-white/60">
-                      <span>
-                        {pesquisa.ano}
-                      </span>
+                      <span>{pesquisa.ano}</span>
                       {pesquisa.destaque && (
                         <span className="bg-cafta-gold/20 text-cafta-gold border border-cafta-gold/30 text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-sm">
                           Destaque
@@ -205,5 +190,5 @@ export default function PesquisasPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

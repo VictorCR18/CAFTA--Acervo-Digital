@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation";
 import AcervoForm from '../../../../components/AcervoForm'
 import type { AcervoTipo, AcervoItem } from '@/types'
 

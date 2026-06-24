@@ -6,6 +6,7 @@ import PesquisaForm from "@/components/PesquisaForm";
 import api from "@/lib/api";
 import type { Pesquisa } from "@/types";
 import Link from "next/link";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function EditPesquisaPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,11 +49,16 @@ export default function EditPesquisaPage() {
     try {
       const updateData: Record<string, any> = {};
 
-      if (updatedPesquisa.titulo !== undefined) updateData.titulo = updatedPesquisa.titulo;
-      if (updatedPesquisa.autores !== undefined) updateData.autores = updatedPesquisa.autores;
-      if (updatedPesquisa.ano !== undefined) updateData.ano = updatedPesquisa.ano;
-      if (updatedPesquisa.link !== undefined) updateData.link = updatedPesquisa.link;
-      if (updatedPesquisa.destaque !== undefined) updateData.destaque = updatedPesquisa.destaque;
+      if (updatedPesquisa.titulo !== undefined)
+        updateData.titulo = updatedPesquisa.titulo;
+      if (updatedPesquisa.autores !== undefined)
+        updateData.autores = updatedPesquisa.autores;
+      if (updatedPesquisa.ano !== undefined)
+        updateData.ano = updatedPesquisa.ano;
+      if (updatedPesquisa.link !== undefined)
+        updateData.link = updatedPesquisa.link;
+      if (updatedPesquisa.destaque !== undefined)
+        updateData.destaque = updatedPesquisa.destaque;
 
       await api.patch(`/api/pesquisas/${id}`, updateData);
       router.push("/admin/pesquisas");
@@ -63,11 +69,7 @@ export default function EditPesquisaPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   if (error) {
@@ -98,11 +100,11 @@ export default function EditPesquisaPage() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/admin/pesquisas" className="text-sm font-medium text-white hover:text-cafta-gold">
+              <Link
+                href="/admin/pesquisas"
+                className="text-sm font-medium text-white hover:text-cafta-gold"
+              >
                 Voltar às pesquisas
-              </Link>
-              <Link href="/" className="text-sm font-medium text-white hover:text-cafta-gold">
-                Voltar ao site
               </Link>
             </div>
           </div>
@@ -110,7 +112,10 @@ export default function EditPesquisaPage() {
       </div>
 
       <div className="container mx-auto px-4 md:px-6 py-8">
-        <PesquisaForm initialData={pesquisa} onSubmitSuccess={handleSubmitSuccess} />
+        <PesquisaForm
+          initialData={pesquisa}
+          onSubmitSuccess={handleSubmitSuccess}
+        />
       </div>
     </div>
   );
