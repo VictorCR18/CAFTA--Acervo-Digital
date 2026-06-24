@@ -110,7 +110,6 @@ export default function ModeracaoPage() {
         title="Aprovação de Mídia"
         description="Revise e aprove ou rejeite submissões de mídia"
         showBackButton={pathname !== "/admin"}
-        onBack={() => router.back()}
       >
         <div className="flex items-center space-x-4">
           <span className="text-white/60 text-sm">
