@@ -5,11 +5,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Injeta o token em toda requisição
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('admin_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('admin_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
   return config
 })

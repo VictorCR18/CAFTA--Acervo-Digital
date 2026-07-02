@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { CATEGORIAS_ACERVO } from "@/lib/constants";
 import type { CategoriaAcervo } from "@/types";
 import { usePendingFiles } from "@/lib/usePendingFiles";
@@ -33,7 +33,6 @@ const tipoColors: Record<string, string> = {
 };
 
 export default function ModeracaoPage() {
-  const router = useRouter();
   const pathname = usePathname();
 
   const { pendingFiles, loading, error } = usePendingFiles();

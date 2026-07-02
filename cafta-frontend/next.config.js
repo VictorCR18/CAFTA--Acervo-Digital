@@ -2,7 +2,12 @@
 const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pub-4ad2e8806dd548dfb67193d7f9b3b100.r2.dev",
+      },
+    ],
   }
 };
 

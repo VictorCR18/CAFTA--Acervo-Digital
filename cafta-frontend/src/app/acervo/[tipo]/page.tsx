@@ -28,11 +28,12 @@ export default async function AcervoTipoPage({
   params,
   searchParams,
 }: PageProps) {
+  console.log("--- PÁGINA ACERVO ACESSADA ---");
+  console.log("Slug recebido:", params.tipo);
   const slug = params.tipo;
   const categoriaInfo = CATEGORIAS_ACERVO.find((c) => c.slug === slug);
   const searchTerm = searchParams.search ?? "";
 
-  // 1. Validação: Verifica se a categoria existe nas constantes
   if (!categoriaInfo) {
     return (
       <main className="min-h-screen bg-cafta-dark flex items-center justify-center">
@@ -47,15 +48,15 @@ export default async function AcervoTipoPage({
   // 2. Fetch dos itens filtrando pela categoria (slug)
   try {
     const paramsObj = new URLSearchParams();
-    paramsObj.append("status", "ativo");
-    if (searchTerm && typeof searchTerm === "string" && searchTerm.trim()) {
+    // paramsObj.append("status", "ativo");
+    if (searchTerm) {
       paramsObj.append("search", searchTerm.trim());
     }
-    paramsObj.append("categoryId", slug); // Filtro pelo slug da categoria
-
+    paramsObj.append("categoryId", slug.toLowerCase());
     const { data: result } = await api.get(
       `/api/midias?${paramsObj.toString()}`,
     );
+
     const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
 
     arquivos = result.data.map((midia: any) => {
@@ -76,8 +77,9 @@ export default async function AcervoTipoPage({
       };
     });
   } catch (err: any) {
-    error = "Erro ao carregar itens da categoria";
-    console.error("[AcervoTipoPage] Error:", err);
+    // Isso vai mostrar a mensagem real do erro na tela do navegador
+    error = `Erro na API: ${err.message || String(err)}`;
+    console.error("[AcervoTipoPage] Error detalhado:", err);
   }
 
   if (error) {
@@ -103,8 +105,7 @@ export default async function AcervoTipoPage({
 
   return (
     <>
-      <Navbar />
-      <main className="min-h-screen bg-cafta-dark pt-[72px]">
+      <main className="min-h-screen bg-cafta-dark">
         <section className="py-12 md:py-20">
           <div className="container mx-auto px-4 md:px-6">
             {/* Cabeçalho da página */}

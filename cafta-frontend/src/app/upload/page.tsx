@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function UploadPage() {
   return (
     <>
-      <main className="min-h-screen bg-cafta-dark pt-[72px]">
+      <main className="min-h-screen bg-cafta-dark pt-[24px]">
         <section className="pb-20">
           <div className="container mx-auto px-4 md:px-6">
             <Link
