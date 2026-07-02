@@ -22,12 +22,20 @@ export function createApp() {
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
 
+  // Regex para aceitar qualquer preview deploy da Vercel deste projeto
+  // (ex: https://cafta-acervo-digital-2xqg2ytm7.vercel.app)
+  const vercelPreviewPattern =
+    /^https:\/\/cafta-acervo-digital[a-z0-9-]*\.vercel\.app$/;
+
   app.use(
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        if (corsOriginList.includes(origin)) {
+        if (
+          corsOriginList.includes(origin) ||
+          vercelPreviewPattern.test(origin)
+        ) {
           return callback(null, true);
         } else {
           return callback(new Error("Not allowed by CORS"));
