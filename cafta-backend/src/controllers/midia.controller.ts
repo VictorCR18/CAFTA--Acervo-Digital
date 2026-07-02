@@ -155,6 +155,8 @@ export const getMidias = asyncHandler(async (req: Request, res: Response) => {
   const { tipo, status, search, categoryId } = req.query as Record<string, string>;
   const { page, limit } = parsePagination(req.query as Record<string, string>);
 
+  console.log("Filtros recebidos na API:", { tipo, status, search, categoryId });
+
   const { rows, total } = await listMidias({
     tipo: tipo as MidiaTipo | undefined,
     categoryId: categoryId,
