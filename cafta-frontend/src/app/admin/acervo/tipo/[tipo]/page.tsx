@@ -10,7 +10,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AdminPageHeader from "@/components/layout/AdminPageHeader";
 import { ItemActions } from "@/components/ui/ItemActions";
 import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal";
-import { CATEGORIAS_ACERVO } from "@/lib/constants";
+import { CATEGORIAS_ACERVO, CATEGORY_COLORS } from "@/lib/constants";
 
 export default function AcervoTipoPage() {
   const params = useParams<{ tipo: string }>();
@@ -80,10 +80,14 @@ export default function AcervoTipoPage() {
         <div className="space-y-4">
           {items.map((item) => {
             // Buscando a info da categoria para este item
-            // ATENÇÃO: Verifique se 'item.categoria' corresponde ao 'slug' no seu array
             const categoriaInfo = CATEGORIAS_ACERVO.find(
               (c) => c.slug === item.categoryId,
             );
+
+            // Determina a cor com fallback caso a categoria não seja encontrada
+            const badgeColor =
+              CATEGORY_COLORS[item.categoryId] ||
+              "bg-cafta-primary/40 text-white/80 border-white/10";
 
             return (
               <div
@@ -114,7 +118,9 @@ export default function AcervoTipoPage() {
                     </p>
 
                     {categoriaInfo && (
-                      <span className="px-2 py-0.5 rounded-full bg-cafta-primary/40 text-[10px] font-medium text-white/80 uppercase border border-white/10">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium uppercase border ${badgeColor}`}
+                      >
                         {categoriaInfo.titulo}
                       </span>
                     )}

@@ -14,7 +14,7 @@ export default function EditAcervoPage() {
   const [item, setItem] = useState<AcervoItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Estado para o modal de exclusão
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -34,8 +34,13 @@ export default function EditAcervoPage() {
           categoryId: midia.categoryId || "",
           historicalPeriod: midia.historicalPeriod || "",
           authorship: midia.authorship || "",
-          fileUrl: r2PublicUrl && midia.pathRelativo ? `${r2PublicUrl}/${midia.pathRelativo}` : "",
-          publicationDate: midia.publicationDate ? new Date(midia.publicationDate).toISOString().split("T")[0] : "",
+          fileUrl:
+            r2PublicUrl && midia.pathRelativo
+              ? `${r2PublicUrl}/${midia.pathRelativo}`
+              : "",
+          publicationDate: midia.publicationDate
+            ? new Date(midia.publicationDate).toISOString().split("T")[0]
+            : "",
           tipo: midia.tipo,
         };
 
@@ -53,7 +58,8 @@ export default function EditAcervoPage() {
     setIsDeleting(true);
     try {
       await api.delete(`/api/midias/${id}`);
-      router.push("/admin/acervo");
+      // Ao deletar, também redireciona de volta para a lista do tipo específico
+      router.push(`/admin/acervo/tipo/${item?.tipo || "imagens"}`);
     } catch (err: any) {
       alert("Erro ao excluir item.");
     } finally {
@@ -63,20 +69,32 @@ export default function EditAcervoPage() {
   };
 
   if (loading) return <LoadingSpinner fullScreen />;
-  if (error || !item) return <div className="text-white text-center py-20">{error || "Item não encontrado"}</div>;
+  if (error || !item)
+    return (
+      <div className="text-white text-center py-20">
+        {error || "Item não encontrado"}
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-cafta-dark">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-white mb-6">Editar: {item.title}</h1>
-        
-        <AcervoForm 
-          initialData={item} 
-          onSubmitSuccess={() => router.push("/admin/acervo")} 
+        <h1 className="text-2xl font-bold text-white mb-6">
+          Editar: {item.title}
+        </h1>
+
+        <AcervoForm
+          initialData={item}
+          // 1. Redireciona pegando o "tipo" do item recém atualizado
+          onSubmitSuccess={(updatedItem) =>
+            router.push(`/admin/acervo/tipo/${updatedItem.tipo}`)
+          }
+          // 2. Garante que se o usuário clicar em "Cancelar", ele também volte pro tipo certo
+          onCancel={() => router.push(`/admin/acervo/tipo/${item.tipo}`)}
         />
 
         <div className="mt-8 pt-6 border-t border-white/10">
-          <button 
+          <button
             onClick={() => setIsDeleteModalOpen(true)}
             className="text-red-400 hover:text-red-300 text-sm"
           >
