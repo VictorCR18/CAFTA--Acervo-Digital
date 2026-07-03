@@ -9,7 +9,7 @@ import { usePendingFiles } from "@/lib/usePendingFiles";
 import api from "@/lib/api";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AdminPageHeader from "@/components/layout/AdminPageHeader";
-import FeedbackPopup from "@/components/ui/FeedbackPopup"; // <-- Importando o novo componente
+import FeedbackPopup from "@/components/ui/FeedbackPopup";
 
 interface PendingFile {
   id: string;
@@ -57,7 +57,6 @@ export default function ModeracaoPage() {
     setErrorState(error);
   }, [pendingFiles, loading, error]);
 
-  // Função auxiliar para exibir o popup
   const showPopup = (message: string, type: "success" | "error") => {
     setPopup({ show: true, message, type });
   };

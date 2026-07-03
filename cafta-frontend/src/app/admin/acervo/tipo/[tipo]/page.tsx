@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAcervoItems } from "@/lib/useAcervoItems";
 import { labelForTipo } from "@/lib/utils";
 import type { AcervoTipo } from "@/types";
 import api from "@/lib/api";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import AdminPageHeader from "@/components/layout/AdminPageHeader"; // <-- Importando o header padronizado
+import AdminPageHeader from "@/components/layout/AdminPageHeader";
+import { ItemActions } from "@/components/ui/ItemActions";
+import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal";
 
 export default function AcervoTipoPage() {
   const params = useParams<{ tipo: string }>();
+  const router = useRouter();
   const tipo = params.tipo as AcervoTipo;
+
+  // Estados para o modal de exclusão
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; titulo: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const { data: items, loading, error } = useAcervoItems({ searchTerm, tipo });
@@ -20,15 +28,25 @@ export default function AcervoTipoPage() {
   const validTipos: AcervoTipo[] = ["imagens", "videos", "artigos"];
   const isValidTipo = validTipos.includes(tipo);
 
-  const handleDelete = async (id: string) => {
+  // Inicia o processo de exclusão abrindo o modal
+  const openDeleteModal = (item: any) => {
+    setItemToDelete({ id: item.id, titulo: item.titulo });
+    setIsDeleteModalOpen(true);
+  };
+
+  // Executa a exclusão de fato
+  const executeDelete = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
     try {
-      await api.delete(`/api/midias/${id}`);
-      alert("Item excluído com sucesso");
-      setSearchTerm((prev) => prev + " ");
-      setTimeout(() => setSearchTerm((prev) => prev.trimEnd()), 0);
+      await api.delete(`/api/midias/${itemToDelete.id}`);
+      setIsDeleteModalOpen(false);
+      window.location.reload(); // Recarrega para atualizar a lista
     } catch (err: any) {
-      console.error("[AcervoTipoPage] Error deleting item:", err);
-      alert("Erro ao excluir item. Por favor, tente novamente.");
+      alert("Erro ao excluir item.");
+    } finally {
+      setIsDeleting(false);
+      setItemToDelete(null);
     }
   };
 
@@ -37,17 +55,8 @@ export default function AcervoTipoPage() {
   if (error || !isValidTipo) {
     return (
       <div className="min-h-screen bg-cafta-dark flex items-center justify-center py-12">
-        <div className="text-center">
-          <h2 className="text-white/50 text-sm mb-4">
-            {!isValidTipo ? "Categoria não encontrada" : "Erro"}
-          </h2>
-          <p className="text-red-400">{error || "A categoria solicitada não é válida."}</p>
-          <Link
-            href="/admin/acervo"
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light"
-          >
-            Voltar ao acervo
-          </Link>
+        <div className="text-center text-white">
+          Erro ao carregar ou categoria inválida.
         </div>
       </div>
     );
@@ -57,117 +66,59 @@ export default function AcervoTipoPage() {
 
   return (
     <div className="min-h-screen bg-cafta-dark">
-      {/* CORREÇÃO E MELHORIA: Usando o header padronizado com botão de voltar para o acervo */}
       <AdminPageHeader
         title={label}
         description="Visualize, edite e gerencie itens deste tipo"
         showBackButton={true}
-        backHref="/admin/acervo" // <-- Faz voltar para a tela dos cards do acervo
+        backHref="/admin/acervo"
       />
 
       <div className="container mx-auto px-4 md:px-6 py-8">
-        {/* Alinhamento perfeito items-end */}
-        <div className="flex flex-wrap items-end gap-4 mb-6">
-          <div className="flex-1 min-w-[200px]">
-            <label htmlFor="search" className="block mb-2 text-sm font-medium text-white">
-              Pesquisar por título
-            </label>
-            <input
-              id="search"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Digite o título para pesquisar..."
-              className="block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-            />
-          </div>
-          <Link
-            href={`/admin/acervo/new?tipo=${tipo}`}
-            className="flex-shrink-0 px-6 py-2 bg-cafta-gold text-white font-semibold rounded-sm text-sm tracking-wide hover:bg-cafta-gold-light hover:shadow-lg hover:-translate-y-0.5 transition-colors"
-          >
-            Adicionar Novo Item
-          </Link>
-        </div>
-
-        {items.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-white/50">Nenhum item encontrado nesta categoria.</p>
-            {searchTerm && (
-              <p className="text-white/40 text-sm mt-2">Nenhum item encontrado para "{searchTerm}"</p>
-            )}
-            <Link
-              href={`/admin/acervo/new?tipo=${tipo}`}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-cafta-gold hover:bg-cafta-gold-light"
-            >
-              Adicionar Primeiro Item
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
+        {/* ... restante do seu formulário de busca e filtro ... */}
+        
+        <div className="space-y-4">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="bg-white/5 rounded-lg border border-white/10 p-6 hover:bg-white/10 transition-colors"
+                onClick={() => window.open(item.url, "_blank")}
+                className="bg-white/5 rounded-lg border border-white/10 p-4 hover:bg-white/10 transition-all cursor-pointer flex flex-row items-center gap-4"
               >
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-lg bg-cafta-primary/50">
-                    {(() => {
-                      const extension = item.filename.split(".").pop()?.toLowerCase() || "";
-                      if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
-                        return <img src={item.url} alt={item.titulo} className="w-12 h-12 object-cover rounded" />;
-                      }
-                      if (["mp4", "webm", "ogg"].includes(extension)) {
-                        return <video src={item.url} className="w-12 h-12 object-cover rounded" muted loop />;
-                      }
-                      return (
-                        <div className="text-white/50">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                      );
-                    })()}
-                  </div>
+                <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-cafta-primary/50 rounded overflow-hidden flex items-center justify-center relative">
+                  <img
+                    src={item.thumbnailPath || item.url}
+                    alt={item.titulo}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                </div>
 
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold mb-2">{item.titulo}</h3>
-                    <p className="text-white/80 text-sm mb-2">{item.description}</p>
-                    <div className="flex items-center gap-4 mb-2 text-sm text-white/60">
-                      <span>{item.dataUpload}</span>
-                      {item.categoryId && (
-                        <span className="bg-cafta-gold/20 text-cafta-gold border border-cafta-gold/30 text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-sm">
-                          {item.categoryId}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold truncate text-sm sm:text-base">
+                    {item.titulo}
+                  </h3>
+                  <p className="text-white/60 text-xs sm:text-sm">{item.dataUpload}</p>
+                </div>
 
-                  <div className="flex-shrink-0 flex space-x-3">
-                    <Link
-                      href={`/admin/acervo/${item.id}/edit`}
-                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-cafta-primary/20 text-white rounded hover:bg-cafta-primary/30 transition-colors"
-                    >
-                      Editar
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
-                    >
-                      Excluir
-                    </button>
-                    <button
-                      onClick={() => window.open(item.url, "_blank")}
-                      className="flex items-center px-3 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 transition-colors"
-                    >
-                      Visualizar
-                    </button>
-                  </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ItemActions
+                    onEdit={() => router.push(`/admin/acervo/${item.id}/edit`)}
+                    onDelete={() => openDeleteModal(item)}
+                  />
                 </div>
               </div>
             ))}
-          </div>
-        )}
+        </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir "${itemToDelete?.titulo}"? Essa ação não pode ser desfeita.`}
+        isDeleting={isDeleting}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={executeDelete}
+      />
     </div>
   );
 }

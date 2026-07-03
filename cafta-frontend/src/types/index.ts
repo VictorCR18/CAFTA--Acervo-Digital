@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 export type AcervoTipo = 'imagens' | 'videos' | 'artigos'
 
 export interface ArquivoAcervo {
+  thumbnailPath: string
   description: string
   categoryId: string
   historicalPeriod: string
