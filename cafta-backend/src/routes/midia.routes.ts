@@ -27,7 +27,7 @@ const uploadBodySchema = z.object({
 
 const listQuerySchema = z.object({
   tipo: z.enum(["imagens", "videos", "artigos"]).optional(),
-  categoryId: z.string().optional(), // <--- ADICIONE ISTO
+  categoryId: z.string().optional(),
   status: z.enum(["ativo", "inativo", "processando"]).optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().positive().optional(),

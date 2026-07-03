@@ -21,6 +21,18 @@ export interface ArquivoAcervo {
   tamanho?: number
 }
 
+export type AcervoFormData = {
+  id?: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  historicalPeriod: string;
+  authorship: string;
+  publicationDate: string;
+  tipo: AcervoTipo | "";
+  fileUrl: string;
+};
+
 // ─── Pesquisa ─────────────────────────────────────────────────────────────
 
 export interface Pesquisa {

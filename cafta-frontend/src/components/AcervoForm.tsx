@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { AcervoItem, AcervoTipo } from "@/types";
+import type { AcervoFormData, AcervoItem, AcervoTipo } from "@/types";
 import { formatFileSize } from "@/lib/utils";
 import { UPLOAD_MAX_SIZE_MB, CATEGORIAS_ACERVO } from "@/lib/constants";
 
@@ -13,18 +13,6 @@ interface AcervoFormProps {
   onCancel?: () => void;
   isPublic?: boolean;
 }
-
-type AcervoFormData = {
-  id?: string;
-  title: string;
-  description: string;
-  categoryId: string;
-  historicalPeriod: string;
-  authorship: string;
-  publicationDate: string;
-  tipo: AcervoTipo | "";
-  fileUrl: string;
-};
 
 const EMPTY_FORM: AcervoFormData = {
   title: "",
@@ -86,7 +74,7 @@ export default function AcervoForm({
   }
 
   const handleChange = (
-    e: React.ChangeEvent<
+    e: ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
@@ -95,7 +83,7 @@ export default function AcervoForm({
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] ?? null;
 
     if (selectedFile && selectedFile.size > UPLOAD_MAX_SIZE_MB * 1024 * 1024) {
@@ -127,7 +115,7 @@ export default function AcervoForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -135,27 +123,47 @@ export default function AcervoForm({
     try {
       const isUpdate = !!formData.id;
       const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
+
       const payload = new FormData();
 
-      const appendIfData = (key: string, value: string | null | undefined) => {
-        if (value !== undefined && value !== null && value !== "") {
-          payload.append(key, value);
-        }
+      payload.append("titulo", formData.title);
+      payload.append("tipo", formData.tipo);
+
+      if (formData.description)
+        payload.append("description", formData.description);
+      if (formData.categoryId)
+        payload.append("categoryId", formData.categoryId);
+      if (formData.historicalPeriod)
+        payload.append("historicalPeriod", formData.historicalPeriod);
+      if (formData.authorship)
+        payload.append("authorship", formData.authorship);
+      if (formData.publicationDate)
+        payload.append("publicationDate", formData.publicationDate);
+
+      if (file) {
+        payload.append("arquivo", file);
+      }
+
+      // Configuração para suportar arquivos e ler o progresso do upload
+      const config = {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent: any) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+          }
+        },
       };
 
-      appendIfData("titulo", formData.title);
-      appendIfData("description", formData.description);
-      appendIfData("categoryId", formData.categoryId);
-      appendIfData("historicalPeriod", formData.historicalPeriod);
-      appendIfData("authorship", formData.authorship);
-      appendIfData("publicationDate", formData.publicationDate);
-      appendIfData("tipo", formData.tipo);
-
-      if (file) payload.append("arquivo", file);
+      setUploadProgress(0); // Garante que a barra inicie vazia
 
       const { data } = await (isUpdate
-        ? api.patch(endpoint, payload)
-        : api.post(endpoint, payload));
+        ? api.patch(endpoint, payload, config)
+        : api.post(endpoint, payload, config));
+
+      setUploadProgress(100); // Garante que mostre completo no final do processo
 
       setUploadStatus("success");
       setUploadMessage(data.message ?? "Operação realizada com sucesso!");
@@ -235,7 +243,6 @@ export default function AcervoForm({
           </div>
         )}
 
-        {/* Título */}
         <div>
           <label
             htmlFor="title"
@@ -264,7 +271,6 @@ export default function AcervoForm({
           )}
         </div>
 
-        {/* Tipo */}
         <div>
           <label
             htmlFor="tipo"
@@ -298,7 +304,6 @@ export default function AcervoForm({
           )}
         </div>
 
-        {/* Descrição */}
         <div>
           <label
             htmlFor="description"
@@ -325,7 +330,6 @@ export default function AcervoForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Categoria - Agora é um Select */}
           <div>
             <label
               htmlFor="categoryId"
@@ -388,7 +392,6 @@ export default function AcervoForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Autoria */}
           <div>
             <label
               htmlFor="authorship"
@@ -413,7 +416,6 @@ export default function AcervoForm({
             />
           </div>
 
-          {/* Data de Publicação */}
           <div>
             <label
               htmlFor="publicationDate"
@@ -439,7 +441,6 @@ export default function AcervoForm({
           </div>
         </div>
 
-        {/* Arquivo */}
         <div>
           <label
             htmlFor="fileUpload"
@@ -493,7 +494,6 @@ export default function AcervoForm({
           </div>
         )}
 
-        {/* Botões de Ação */}
         <div
           className={`flex ${isPublic ? "flex-col" : "justify-end"} gap-4 mt-6`}
         >
