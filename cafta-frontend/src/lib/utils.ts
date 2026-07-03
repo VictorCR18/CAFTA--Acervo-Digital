@@ -1,8 +1,5 @@
 import type { AcervoTipo } from '@/types'
 
-/**
- * Formats a file size in bytes to a human-readable string.
- */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
@@ -11,9 +8,6 @@ export function formatFileSize(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
 }
 
-/**
- * Returns a Portuguese label for a given AcervoTipo.
- */
 export function labelForTipo(tipo: AcervoTipo): string {
   const labels: Record<AcervoTipo, string> = {
     imagens: 'Galeria de Imagens',
@@ -23,9 +17,6 @@ export function labelForTipo(tipo: AcervoTipo): string {
   return labels[tipo]
 }
 
-/**
- * Returns the action label for a given AcervoTipo.
- */
 export function actionLabelForTipo(tipo: AcervoTipo): string {
   const labels: Record<AcervoTipo, string> = {
     imagens: 'Visualizar',

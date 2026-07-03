@@ -43,11 +43,8 @@ const updateStatusSchema = z.object({
 });
 
 const updateMidiaSchema = z.object({
-  titulo: z
-    .string()
-    .min(3, "Título deve ter ao menos 3 caracteres")
-    .max(200)
-    .optional(),
+  titulo: z.string().min(3, "Título deve ter ao menos 3 caracteres").max(200).optional(),
+  tipo: z.enum(["imagens", "videos", "artigos"]).optional(),
   description: z.string().optional(),
   categoryId: z.string().optional(),
   historicalPeriod: z.string().optional(),
@@ -86,6 +83,7 @@ router.delete("/:id", validate(idParamSchema, "params"), deleteMidiaHandler);
  */
 router.patch(
   "/:id/status",
+  upload.single("arquivo"),
   validate(idParamSchema, "params"),
   validate(updateStatusSchema, "body"),
   updateMidiaStatusHandler,

@@ -6,7 +6,6 @@ export default function CategoriaCard({ item }: { item: CategoriaAcervo }) {
   return (
     <Link href={`/acervo/${item.slug}`} className="block">
       <article className="card-acervo group cursor-pointer">
-        {/* Image */}
         <div className="relative aspect-[3/2] overflow-hidden">
           <Image
             src={item.imagemSrc}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAcervoItems } from "@/lib/useAcervoItems";
 import { labelForTipo } from "@/lib/utils";
@@ -11,6 +10,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AdminPageHeader from "@/components/layout/AdminPageHeader";
 import { ItemActions } from "@/components/ui/ItemActions";
 import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal";
+import { CATEGORIAS_ACERVO } from "@/lib/constants";
 
 export default function AcervoTipoPage() {
   const params = useParams<{ tipo: string }>();
@@ -19,7 +19,10 @@ export default function AcervoTipoPage() {
 
   // Estados para o modal de exclusão
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{ id: string; titulo: string } | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    titulo: string;
+  } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,10 +77,15 @@ export default function AcervoTipoPage() {
       />
 
       <div className="container mx-auto px-4 md:px-6 py-8">
-        {/* ... restante do seu formulário de busca e filtro ... */}
-        
         <div className="space-y-4">
-            {items.map((item) => (
+          {items.map((item) => {
+            // Buscando a info da categoria para este item
+            // ATENÇÃO: Verifique se 'item.categoria' corresponde ao 'slug' no seu array
+            const categoriaInfo = CATEGORIAS_ACERVO.find(
+              (c) => c.slug === item.categoryId,
+            );
+
+            return (
               <div
                 key={item.id}
                 onClick={() => window.open(item.url, "_blank")}
@@ -88,7 +96,9 @@ export default function AcervoTipoPage() {
                     src={item.thumbnailPath || item.url}
                     alt={item.titulo}
                     className="w-full h-full object-cover"
-                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 </div>
 
@@ -96,7 +106,19 @@ export default function AcervoTipoPage() {
                   <h3 className="text-white font-semibold truncate text-sm sm:text-base">
                     {item.titulo}
                   </h3>
-                  <p className="text-white/60 text-xs sm:text-sm">{item.dataUpload}</p>
+
+                  {/* Container de metadados: Data + Badge da Categoria */}
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-white/60 text-xs sm:text-sm">
+                      {item.dataUpload}
+                    </p>
+
+                    {categoriaInfo && (
+                      <span className="px-2 py-0.5 rounded-full bg-cafta-primary/40 text-[10px] font-medium text-white/80 uppercase border border-white/10">
+                        {categoriaInfo.titulo}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div onClick={(e) => e.stopPropagation()}>
@@ -106,11 +128,11 @@ export default function AcervoTipoPage() {
                   />
                 </div>
               </div>
-            ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* Modal de Confirmação */}
       <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}
         title="Confirmar exclusão"

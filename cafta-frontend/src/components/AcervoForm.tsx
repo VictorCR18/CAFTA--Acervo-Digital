@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { AcervoItem, AcervoTipo } from "@/types";
 import { formatFileSize } from "@/lib/utils";
-// Importamos o CATEGORIAS_ACERVO das constantes
 import { UPLOAD_MAX_SIZE_MB, CATEGORIAS_ACERVO } from "@/lib/constants";
 
 interface AcervoFormProps {
@@ -129,34 +128,34 @@ export default function AcervoForm({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validate()) return;
+    e.preventDefault();
+    if (!validate()) return;
 
-  setIsLoading(true);
-  try {
-    const isUpdate = !!formData.id;
-    const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
-    const payload = new FormData();
+    setIsLoading(true);
+    try {
+      const isUpdate = !!formData.id;
+      const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
+      const payload = new FormData();
 
-    const appendIfData = (key: string, value: string | null | undefined) => {
-      if (value !== undefined && value !== null && value !== "") {
-        payload.append(key, value);
-      }
-    };
+      const appendIfData = (key: string, value: string | null | undefined) => {
+        if (value !== undefined && value !== null && value !== "") {
+          payload.append(key, value);
+        }
+      };
 
-    appendIfData("titulo", formData.title);
-    appendIfData("description", formData.description);
-    appendIfData("categoryId", formData.categoryId);
-    appendIfData("historicalPeriod", formData.historicalPeriod);
-    appendIfData("authorship", formData.authorship);
-    appendIfData("publicationDate", formData.publicationDate);
-    appendIfData("tipo", formData.tipo);
+      appendIfData("titulo", formData.title);
+      appendIfData("description", formData.description);
+      appendIfData("categoryId", formData.categoryId);
+      appendIfData("historicalPeriod", formData.historicalPeriod);
+      appendIfData("authorship", formData.authorship);
+      appendIfData("publicationDate", formData.publicationDate);
+      appendIfData("tipo", formData.tipo);
 
-    if (file) payload.append("arquivo", file);
+      if (file) payload.append("arquivo", file);
 
-    const { data } = await (isUpdate
-      ? api.patch(endpoint, payload, { headers: { "Content-Type": "multipart/form-data" } })
-      : api.post(endpoint, payload, { headers: { "Content-Type": "multipart/form-data" } }));
+      const { data } = await (isUpdate
+        ? api.patch(endpoint, payload)
+        : api.post(endpoint, payload));
 
       setUploadStatus("success");
       setUploadMessage(data.message ?? "Operação realizada com sucesso!");
@@ -348,7 +347,9 @@ export default function AcervoForm({
                   : "block w-full rounded-md border-0 py-1.5 pl-3 pr-6 text-white bg-white/10 focus:ring-2 focus:ring-white"
               }
             >
-              <option value="" disabled>Selecione uma categoria...</option>
+              <option value="" disabled>
+                Selecione uma categoria...
+              </option>
               {CATEGORIAS_ACERVO.map((cat) => (
                 <option key={cat.slug} value={cat.slug}>
                   {cat.titulo}
