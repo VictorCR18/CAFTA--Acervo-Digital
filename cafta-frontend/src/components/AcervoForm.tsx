@@ -118,7 +118,6 @@ export default function AcervoForm({
 
     if (!formData.title.trim()) newErrors.title = "Título é obrigatório";
     if (!formData.tipo) newErrors.tipo = "Tipo é obrigatório";
-    // Torna a Categoria obrigatória
     if (!formData.categoryId) newErrors.categoryId = "Categoria é obrigatória";
 
     if (!formData.id && !file) {
@@ -130,42 +129,34 @@ export default function AcervoForm({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+  e.preventDefault();
+  if (!validate()) return;
 
-    setIsLoading(true);
-    setUploadProgress(0);
-    setUploadStatus("loading");
-    setUploadMessage("");
+  setIsLoading(true);
+  try {
+    const isUpdate = !!formData.id;
+    const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
+    const payload = new FormData();
 
-    try {
-      const isUpdate = !!formData.id;
-      const endpoint = isUpdate ? `/api/midias/${formData.id}` : `/api/midias`;
+    const appendIfData = (key: string, value: string | null | undefined) => {
+      if (value !== undefined && value !== null && value !== "") {
+        payload.append(key, value);
+      }
+    };
 
-      const payload = new FormData();
-      payload.append("titulo", formData.title.trim());
-      payload.append("description", formData.description.trim());
-      payload.append("categoryId", formData.categoryId.trim());
-      payload.append("historicalPeriod", formData.historicalPeriod.trim());
-      payload.append("authorship", formData.authorship.trim());
-      payload.append("publicationDate", formData.publicationDate);
-      payload.append("tipo", formData.tipo);
-      if (file) payload.append("arquivo", file);
+    appendIfData("titulo", formData.title);
+    appendIfData("description", formData.description);
+    appendIfData("categoryId", formData.categoryId);
+    appendIfData("historicalPeriod", formData.historicalPeriod);
+    appendIfData("authorship", formData.authorship);
+    appendIfData("publicationDate", formData.publicationDate);
+    appendIfData("tipo", formData.tipo);
 
-      const config = {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent: any) => {
-          const total = progressEvent.total || 1;
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / total,
-          );
-          setUploadProgress(percentCompleted);
-        },
-      };
+    if (file) payload.append("arquivo", file);
 
-      const { data } = await (isUpdate
-        ? api.patch(endpoint, payload, config)
-        : api.post(endpoint, payload, config));
+    const { data } = await (isUpdate
+      ? api.patch(endpoint, payload, { headers: { "Content-Type": "multipart/form-data" } })
+      : api.post(endpoint, payload, { headers: { "Content-Type": "multipart/form-data" } }));
 
       setUploadStatus("success");
       setUploadMessage(data.message ?? "Operação realizada com sucesso!");

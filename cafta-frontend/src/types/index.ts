@@ -16,7 +16,7 @@ export interface ArquivoAcervo {
   tipo: AcervoTipo
   filename: string
   url: string
-  thumbnailUrl?: string // URL pública da thumbnail (apenas para imagens)
+  thumbnailUrl?: string 
   dataUpload: string
   tamanho?: number
 }

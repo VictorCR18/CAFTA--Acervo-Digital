@@ -229,26 +229,21 @@ export const updateMidiaStatusHandler = asyncHandler(
 export const updateMidiaHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const updates = req.body; // Pega tudo que vem do frontend
+    const { titulo, description, categoryId, historicalPeriod, authorship, publicationDate, tipo } = req.body;
 
-    // Cria um objeto dinâmico para atualização
+    // Criamos um objeto apenas com o que foi enviado
     const dataToUpdate: any = {};
+    if (titulo !== undefined) dataToUpdate.titulo = titulo;
+    if (description !== undefined) dataToUpdate.description = description;
+    if (categoryId !== undefined) dataToUpdate.categoryId = categoryId;
+    if (tipo !== undefined) dataToUpdate.tipo = tipo; // Garante que o tipo não suma
+    if (historicalPeriod !== undefined) dataToUpdate.historicalPeriod = historicalPeriod;
+    if (authorship !== undefined) dataToUpdate.authorship = authorship;
+    if (publicationDate) dataToUpdate.publicationDate = new Date(publicationDate);
 
-    // Só adiciona ao objeto de update se o valor existir na requisição
-    if (updates.titulo) dataToUpdate.titulo = updates.titulo;
-    if (updates.description !== undefined) dataToUpdate.description = updates.description;
-    if (updates.categoryId) dataToUpdate.categoryId = updates.categoryId;
-    if (updates.tipo) dataToUpdate.tipo = updates.tipo; // Garante que o tipo não suma!
-    if (updates.historicalPeriod !== undefined) dataToUpdate.historicalPeriod = updates.historicalPeriod;
-    if (updates.authorship !== undefined) dataToUpdate.authorship = updates.authorship;
-    if (updates.publicationDate) dataToUpdate.publicationDate = new Date(updates.publicationDate);
-
-    // Se nenhum campo foi enviado, retorna erro ou sucesso vazio
-    if (Object.keys(dataToUpdate).length === 0) {
-      throw new AppError("Nenhum dado para atualizar foi enviado.", 400);
-    }
-
+    // O updateMidia (no seu model) usará apenas esses campos, sem apagar os outros
     const midia = await updateMidia(id, dataToUpdate);
+    
     if (!midia) throw new AppError("Mídia não encontrada.", 404);
 
     res.json({

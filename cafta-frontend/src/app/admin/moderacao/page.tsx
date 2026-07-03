@@ -40,7 +40,6 @@ export default function ModeracaoPage() {
   const [loadingState, setLoadingState] = useState<boolean>(true);
   const [errorState, setErrorState] = useState<string | null>(null);
 
-  // <-- Estado para controlar o Popup
   const [popup, setPopup] = useState<{
     show: boolean;
     message: string;
@@ -74,13 +73,13 @@ export default function ModeracaoPage() {
       setLoadingState(true);
       await api.patch(`/api/midias/${id}/status`, { status: "ativo" });
       setPendingFilesState((prev) => prev.filter((file) => file.id !== id));
-      showPopup("Arquivo aprovado com sucesso!", "success"); // <-- Substituindo alert
+      showPopup("Arquivo aprovado com sucesso!", "success");
     } catch (err: any) {
       console.error("[ModeracaoPage] Error approving file:", err);
       showPopup(
         err.response?.data?.error || "Erro ao aprovar arquivo",
         "error",
-      ); // <-- Substituindo alert
+      );
     } finally {
       setLoadingState(false);
     }
@@ -91,13 +90,13 @@ export default function ModeracaoPage() {
       setLoadingState(true);
       await api.patch(`/api/midias/${id}/status`, { status: "inativo" });
       setPendingFilesState((prev) => prev.filter((file) => file.id !== id));
-      showPopup("Arquivo rejeitado com sucesso!", "success"); // <-- Substituindo alert
+      showPopup("Arquivo rejeitado com sucesso!", "success");
     } catch (err: any) {
       console.error("[ModeracaoPage] Error rejecting file:", err);
       showPopup(
         err.response?.data?.error || "Erro ao rejeitar arquivo",
         "error",
-      ); // <-- Substituindo alert
+      );
     } finally {
       setLoadingState(false);
     }
@@ -335,7 +334,6 @@ export default function ModeracaoPage() {
         )}
       </div>
 
-      {/* Renderização do Popup */}
       {popup.show && (
         <FeedbackPopup
           message={popup.message}
