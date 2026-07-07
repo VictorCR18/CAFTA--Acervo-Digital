@@ -13,11 +13,9 @@ import {
 
 const router = Router();
 
-// Validation schemas
 const uploadBodySchema = z.object({
   titulo: z.string().min(3, "Título deve ter ao menos 3 caracteres").max(200),
   tipo: z.enum(["imagens", "videos", "artigos"]),
-  // Novos campos descritivos
   description: z.string().optional(),
   categoryId: z.string().optional(),
   historicalPeriod: z.string().optional(),
@@ -65,11 +63,7 @@ router.post(
   uploadMidia,
 );
 
-/** GET /api/midias?tipo=imagens&search=texto&page=1&limit=20
- *
- * Note: For public display (e.g., homepage), this endpoint returns approved media items
- * when status='ativo' is specified (default when no status parameter provided).
- */
+/** GET /api/midias?tipo=imagens&search=texto&page=1&limit=20 **/
 router.get("/", validate(listQuerySchema, "query"), getMidias);
 
 /** GET /api/midias/:id */

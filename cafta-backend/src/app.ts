@@ -17,7 +17,6 @@ export function createApp() {
   // ─── Security ───────────────────────────────────────────────────────────────
   app.use(helmet());
 
-  // Configure CORS with multiple origins
   const corsOriginList = env.CORS_ORIGIN.split(",")
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
@@ -30,7 +29,6 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         if (
           corsOriginList.includes(origin) ||

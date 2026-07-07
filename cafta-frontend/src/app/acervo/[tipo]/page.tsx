@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import Footer from "../../../components/layout/Footer";
 import { CATEGORIAS_ACERVO } from "../../../lib/constants";
 import { LuArrowLeft } from "react-icons/lu";
+import SearchFilters from "@/components/ui/SearchFilters"; 
 
 export async function generateMetadata({
   params,
@@ -20,6 +21,7 @@ interface PageProps {
   params: { tipo: string };
   searchParams: {
     search?: string;
+    tipo?: string; // Adicionado tipo aqui
     [key: string]: string | string[] | undefined;
   };
 }
@@ -28,11 +30,10 @@ export default async function AcervoTipoPage({
   params,
   searchParams,
 }: PageProps) {
-  console.log("--- PÁGINA ACERVO ACESSADA ---");
-  console.log("Slug recebido:", params.tipo);
   const slug = params.tipo;
   const categoriaInfo = CATEGORIAS_ACERVO.find((c) => c.slug === slug);
   const searchTerm = searchParams.search ?? "";
+  const tipoFiltro = searchParams.tipo ?? ""; // Captura o filtro da URL
 
   if (!categoriaInfo) {
     return (
@@ -45,14 +46,19 @@ export default async function AcervoTipoPage({
   let arquivos: any[] = [];
   let error: string | null = null;
 
-  // 2. Fetch dos itens filtrando pela categoria (slug)
   try {
     const paramsObj = new URLSearchParams();
-    // paramsObj.append("status", "ativo");
+    
+    // Adiciona os parâmetros apenas se existirem
     if (searchTerm) {
       paramsObj.append("search", searchTerm.trim());
     }
+    if (tipoFiltro) {
+      paramsObj.append("tipo", tipoFiltro);
+    }
+    
     paramsObj.append("categoryId", slug.toLowerCase());
+    
     const { data: result } = await api.get(
       `/api/midias?${paramsObj.toString()}`,
     );
@@ -67,7 +73,7 @@ export default async function AcervoTipoPage({
       return {
         id: midia.id,
         titulo: midia.titulo,
-        tipo: midia.tipo, // 'imagens', 'videos' ou 'artigos'
+        tipo: midia.tipo,
         filename: midia.filename,
         url: fileUrl,
         dataUpload: midia.criadoEm
@@ -77,7 +83,6 @@ export default async function AcervoTipoPage({
       };
     });
   } catch (err: any) {
-    // Isso vai mostrar a mensagem real do erro na tela do navegador
     error = `Erro na API: ${err.message || String(err)}`;
     console.error("[AcervoTipoPage] Error detalhado:", err);
   }
@@ -108,8 +113,7 @@ export default async function AcervoTipoPage({
       <main className="min-h-screen bg-cafta-dark">
         <section className="py-12 md:py-20">
           <div className="container mx-auto px-4 md:px-6">
-            {/* Cabeçalho da página */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div className="flex items-center gap-4">
                 <Link
                   href="/#section_acervo"
@@ -133,7 +137,9 @@ export default async function AcervoTipoPage({
               </div>
             </div>
 
-            {/* Listagem de itens */}
+            {/* Componente de Filtro Adicionado Aqui */}
+            <SearchFilters />
+
             {arquivos.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {arquivos.map((arquivo) => (
@@ -202,14 +208,16 @@ export default async function AcervoTipoPage({
             ) : (
               <div className="text-center py-20 border border-dashed border-white/10 rounded-lg">
                 <p className="text-white/40 text-sm">
-                  Nenhum item cadastrado ainda nesta categoria.
+                  Nenhum item encontrado com estes filtros.
                 </p>
-                <Link
-                  href="/upload"
-                  className="btn-cafta-outline text-xs mt-6 inline-flex"
-                >
-                  Publicar o primeiro ↗
-                </Link>
+                {(!searchTerm && !tipoFiltro) && (
+                  <Link
+                    href="/upload"
+                    className="btn-cafta-outline text-xs mt-6 inline-flex"
+                  >
+                    Publicar o primeiro ↗
+                  </Link>
+                )}
               </div>
             )}
           </div>
