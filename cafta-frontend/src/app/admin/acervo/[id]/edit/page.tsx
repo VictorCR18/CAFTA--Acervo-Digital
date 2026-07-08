@@ -14,8 +14,6 @@ export default function EditAcervoPage() {
   const [item, setItem] = useState<AcervoItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estado para o modal de exclusão
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -58,7 +56,6 @@ export default function EditAcervoPage() {
     setIsDeleting(true);
     try {
       await api.delete(`/api/midias/${id}`);
-      // Ao deletar, também redireciona de volta para a lista do tipo específico
       router.push(`/admin/acervo/tipo/${item?.tipo || "imagens"}`);
     } catch (err: any) {
       alert("Erro ao excluir item.");
@@ -85,11 +82,9 @@ export default function EditAcervoPage() {
 
         <AcervoForm
           initialData={item}
-          // 1. Redireciona pegando o "tipo" do item recém atualizado
           onSubmitSuccess={(updatedItem) =>
             router.push(`/admin/acervo/tipo/${updatedItem.tipo}`)
           }
-          // 2. Garante que se o usuário clicar em "Cancelar", ele também volte pro tipo certo
           onCancel={() => router.push(`/admin/acervo/tipo/${item.tipo}`)}
         />
 

@@ -92,7 +92,6 @@ export default function PesquisasSection() {
     );
   }
 
-  // Handle empty state
   if (!pesquisas || pesquisas.length === 0) {
     return (
       <section id="section_pesquisas" className="py-24 bg-cafta-primary">
@@ -118,21 +117,18 @@ export default function PesquisasSection() {
   return (
     <section id="section_pesquisas" className="py-24 bg-cafta-primary">
       <div className="container mx-auto px-4 md:px-6">
-        {/* Heading */}
         <div className="text-center mb-14">
           <span className="section-eyebrow">Produções acadêmicas</span>
           <h2 className="section-title">Pesquisas</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Column 1 */}
           <div className="bg-cafta-dark/50 rounded-lg border border-white/10 p-6">
             {col1.map((p) => (
               <PesquisaRow key={p.id} pesquisa={p} />
             ))}
           </div>
 
-          {/* Column 2 */}
           <div className="bg-cafta-dark/50 rounded-lg border border-white/10 p-6">
             {col2.map((p) => (
               <PesquisaRow key={p.id} pesquisa={p} />

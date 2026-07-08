@@ -65,7 +65,10 @@ export default function AdminConfiguracoesPage() {
     setLoading(true);
     try {
       await api.put("/api/admin/password", { oldPassword, newPassword });
-      setFeedback({ message: "Senha atualizada com sucesso.", type: "success" });
+      setFeedback({
+        message: "Senha atualizada com sucesso.",
+        type: "success",
+      });
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -84,7 +87,6 @@ export default function AdminConfiguracoesPage() {
     try {
       await api.post("/api/admin/logout");
     } catch {
-      // mesmo que falhe no servidor, seguimos limpando a sessão local
     } finally {
       localStorage.removeItem("admin_token");
       router.push("/admin/login");
@@ -95,7 +97,6 @@ export default function AdminConfiguracoesPage() {
     <main className="min-h-screen bg-cafta-dark">
       <section className="py-12 md:py-20">
         <div className="container mx-auto px-4 md:px-6 max-w-2xl">
-          {/* Cabeçalho */}
           <div className="flex items-center gap-4 mb-10">
             <Link
               href="/admin"
@@ -115,7 +116,6 @@ export default function AdminConfiguracoesPage() {
             </div>
           </div>
 
-          {/* Card: trocar senha */}
           <div className="border border-white/10 rounded-lg bg-white/[0.02] p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-md bg-cafta-gold/10 flex items-center justify-center text-cafta-gold shrink-0">
@@ -132,7 +132,6 @@ export default function AdminConfiguracoesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Senha atual */}
               <div>
                 <label
                   htmlFor="oldPassword"
@@ -168,7 +167,6 @@ export default function AdminConfiguracoesPage() {
 
               <div className="h-px bg-white/5" />
 
-              {/* Nova senha */}
               <div>
                 <label
                   htmlFor="newPassword"
@@ -202,7 +200,6 @@ export default function AdminConfiguracoesPage() {
                 </div>
               </div>
 
-              {/* Confirmar nova senha */}
               <div>
                 <label
                   htmlFor="confirmPassword"
@@ -247,7 +244,6 @@ export default function AdminConfiguracoesPage() {
             </form>
           </div>
 
-          {/* Card: sessão */}
           <div className="border border-white/10 rounded-lg bg-white/[0.02] p-6 md:p-8 mt-6 flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="text-white font-semibold text-sm">Sessão</h2>

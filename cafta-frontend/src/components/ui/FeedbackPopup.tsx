@@ -8,8 +8,11 @@ interface FeedbackPopupProps {
   onClose: () => void;
 }
 
-export default function FeedbackPopup({ message, type, onClose }: FeedbackPopupProps) {
-  // Fecha o popup automaticamente após 3.5 segundos
+export default function FeedbackPopup({
+  message,
+  type,
+  onClose,
+}: FeedbackPopupProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -29,24 +32,54 @@ export default function FeedbackPopup({ message, type, onClose }: FeedbackPopupP
       role="alert"
     >
       {isSuccess ? (
-        <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <svg
+          className="w-5 h-5 mr-3 flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
         </svg>
       ) : (
-        <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg
+          className="w-5 h-5 mr-3 flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       )}
-      
+
       <span className="font-medium text-sm mr-4">{message}</span>
-      
+
       <button
         onClick={onClose}
         className="ml-auto text-white/40 hover:text-white transition-colors"
         aria-label="Fechar"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>

@@ -17,7 +17,6 @@ export default function CategoriaCard({ item }: { item: CategoriaAcervo }) {
           <div className="absolute inset-0 bg-gradient-to-t from-cafta-dark/80 via-transparent to-transparent" />
         </div>
 
-        {/* Info */}
         <div className="p-5">
           <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-cafta-gold transition-colors">
             {item.titulo}

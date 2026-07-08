@@ -21,7 +21,7 @@ interface PageProps {
   params: { tipo: string };
   searchParams: {
     search?: string;
-    tipo?: string; // Adicionado tipo aqui
+    tipo?: string;
     [key: string]: string | string[] | undefined;
   };
 }
@@ -33,7 +33,7 @@ export default async function AcervoTipoPage({
   const slug = params.tipo;
   const categoriaInfo = CATEGORIAS_ACERVO.find((c) => c.slug === slug);
   const searchTerm = searchParams.search ?? "";
-  const tipoFiltro = searchParams.tipo ?? ""; // Captura o filtro da URL
+  const tipoFiltro = searchParams.tipo ?? "";
 
   if (!categoriaInfo) {
     return (
@@ -49,7 +49,6 @@ export default async function AcervoTipoPage({
   try {
     const paramsObj = new URLSearchParams();
     
-    // Adiciona os parâmetros apenas se existirem
     if (searchTerm) {
       paramsObj.append("search", searchTerm.trim());
     }
@@ -137,7 +136,6 @@ export default async function AcervoTipoPage({
               </div>
             </div>
 
-            {/* Componente de Filtro Adicionado Aqui */}
             <SearchFilters />
 
             {arquivos.length > 0 ? (

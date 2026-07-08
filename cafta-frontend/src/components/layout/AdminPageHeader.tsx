@@ -6,7 +6,7 @@ interface AdminPageHeaderProps {
   description?: string;
   children?: React.ReactNode;
   showBackButton?: boolean;
-  backHref?: string; // <-- Nova propriedade opcional
+  backHref?: string;
 }
 
 export default function AdminPageHeader({
@@ -14,7 +14,7 @@ export default function AdminPageHeader({
   description,
   children,
   showBackButton = false,
-  backHref = "/admin", // <-- Padrão é /admin se não for informado
+  backHref = "/admin",
 }: AdminPageHeaderProps) {
   return (
     <header className="bg-cafta-primary/50 border-b border-white/10">
@@ -23,7 +23,7 @@ export default function AdminPageHeader({
           <div className="flex items-center gap-4">
             {showBackButton && (
               <Link
-                href={backHref} // <-- Rota dinâmica aqui
+                href={backHref}
                 className="flex items-center justify-center text-white/60 hover:text-white transition-colors p-2 -ml-2 rounded-md hover:bg-white/5"
                 aria-label="Voltar para a página anterior"
               >

@@ -8,14 +8,13 @@ import { usePathname } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AdminPageHeader from "@/components/layout/AdminPageHeader";
 import FeedbackPopup from "@/components/ui/FeedbackPopup";
-import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal"; // <-- Novo Import
+import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal";
 
 export default function PesquisasPage() {
   const { data: pesquisas, loading, error, deletePesquisa } = usePesquisas();
   const [searchTerm, setSearchTerm] = useState("");
   const pathname = usePathname();
 
-  // Estados de feedback e controle
   const [popup, setPopup] = useState<{
     show: boolean;
     message: string;
@@ -155,7 +154,6 @@ export default function PesquisasPage() {
         )}
       </div>
 
-      {/* Uso do Componente de Modal Componentizado */}
       <ConfirmDeleteModal
         isOpen={!!itemToDelete}
         title="Excluir Pesquisa?"

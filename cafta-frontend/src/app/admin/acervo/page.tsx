@@ -22,7 +22,7 @@ export default function AcervoPage() {
         "videos",
         "artigos",
       ];
-      // Busca a contagem de itens ativos de cada tipo
+
       const countsPromises = tipos.map(async (tipo) => {
         const { data } = await api.get(`/api/midias?tipo=${tipo}&status=ativo`);
         return [tipo, data.total || 0];
@@ -67,7 +67,6 @@ export default function AcervoPage() {
 
   return (
     <div className="min-h-screen bg-cafta-dark">
-      {/* Header */}
       <div className="bg-cafta-primary/50 border-b border-white/10">
         <AdminPageHeader
           title="Acervo Digital"
@@ -76,7 +75,6 @@ export default function AcervoPage() {
         />
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 md:px-6 py-10">
         <div className="space-y-8">
           <div className="grid gap-6 md:grid-cols-3">
@@ -102,7 +100,6 @@ export default function AcervoPage() {
             ].map(({ tipo, label, color, icon }) => (
               <Link
                 key={tipo}
-                // O Link agora leva diretamente para a página específica da categoria
                 href={`/admin/acervo/tipo/${tipo}`}
                 className="group block cursor-pointer"
               >
@@ -138,7 +135,6 @@ export default function AcervoPage() {
             ))}
           </div>
 
-          {/* Caso não exista nenhum item no banco de dados ainda */}
           {!Object.values(tipoCounts).some((count) => count > 0) && (
             <div className="text-center py-12 mt-8 bg-cafta-primary/10 rounded-lg border border-white/5">
               <p className="text-white/50 mb-4">

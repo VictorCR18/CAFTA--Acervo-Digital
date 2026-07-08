@@ -19,8 +19,6 @@ export default function Navbar() {
 
   const [pendingCount, setPendingCount] = useState<number>(0);
 
-  // Track scroll for navbar background
-
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 60);
 
@@ -28,8 +26,6 @@ export default function Navbar() {
 
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // Track active section via IntersectionObserver
 
   useEffect(() => {
     const sectionIds = NAV_ITEMS.map((n) => n.sectionId).filter(
@@ -59,8 +55,6 @@ export default function Navbar() {
     return () => observers.forEach((o) => o.disconnect());
   }, []);
 
-  // Fetch pending count periodically
-
   useEffect(() => {
     async function fetchPendingCount() {
       try {
@@ -68,7 +62,7 @@ export default function Navbar() {
 
         setPendingCount(data.data?.count || 0);
       } catch {
-        // Silently ignore — pode ser 401 (não autenticado) ou erro de rede
+        setPendingCount(0);
       }
     }
 
@@ -110,8 +104,6 @@ export default function Navbar() {
       }`}
     >
       <nav className="container mx-auto px-4 md:px-6 flex items-center h-[72px]">
-        {/* Logo */}
-
         <Link href="/" className="flex items-center gap-3 shrink-0">
           <Image
             src="/images/LogoCafta1.png"
@@ -126,8 +118,6 @@ export default function Navbar() {
             CAFTA
           </span>
         </Link>
-
-        {/* Desktop nav */}
 
         <ul className="hidden md:flex items-center gap-1 ml-auto">
           {NAV_ITEMS.map((item) => (
@@ -153,8 +143,6 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Publicar CTA */}
-
         <div className="hidden md:block ml-6">
           <Link href="/upload" className="btn-cafta-outline text-xs py-2 px-4">
             Publicar
@@ -173,8 +161,6 @@ export default function Navbar() {
             </svg>
           </Link>
         </div>
-
-        {/* Admin CTA */}
 
         <div className="hidden md:block ml-4 relative">
           <Link href="/admin" className="btn-cafta-primary text-xs px-4 py-2">
@@ -199,8 +185,6 @@ export default function Navbar() {
             </svg>
           </Link>
         </div>
-
-        {/* Mobile hamburger */}
 
         <button
           className="md:hidden ml-auto p-2 text-white/80 hover:text-white"
@@ -232,8 +216,6 @@ export default function Navbar() {
           </svg>
         </button>
       </nav>
-
-      {/* Mobile menu */}
 
       {mobileOpen && (
         <div className="md:hidden bg-cafta-dark/98 backdrop-blur-md border-t border-white/10">

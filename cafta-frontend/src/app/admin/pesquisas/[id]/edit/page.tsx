@@ -7,16 +7,15 @@ import api from "@/lib/api";
 import type { Pesquisa } from "@/types";
 import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import FeedbackPopup from "@/components/ui/FeedbackPopup"; // <-- Importando o popup
+import FeedbackPopup from "@/components/ui/FeedbackPopup";
 
 export default function EditPesquisaPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [pesquisa, setPesquisa] = useState<Pesquisa | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [fetchError, setFetchError] = useState<string | null>(null); // Erros de carregamento inicial
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Estado para controlar o popup
   const [popup, setPopup] = useState<{
     show: boolean;
     message: string;
@@ -39,12 +38,11 @@ export default function EditPesquisaPage() {
       try {
         const response = await api.get(`/api/pesquisas/${id}`);
 
-        // CORREÇÃO AQUI: Garante que pega o objeto independentemente de como a API devolve
         const pesquisaData = response.data.data || response.data;
 
         const frontendPesquisa: Pesquisa = {
           id: pesquisaData.id,
-          title: pesquisaData.titulo || pesquisaData.title || "", // Tratamento duplo
+          title: pesquisaData.titulo || pesquisaData.title || "",
           titulo: pesquisaData.titulo || pesquisaData.title || "",
           autores: pesquisaData.autores || [],
           ano: pesquisaData.ano || "",
@@ -77,8 +75,6 @@ export default function EditPesquisaPage() {
       if (updatedPesquisa.destaque !== undefined)
         updateData.destaque = updatedPesquisa.destaque;
 
-      // SOLUÇÃO: Só adiciona o link no payload se houver algum texto digitado.
-      // Se estiver vazio, a API simplesmente não recebe o campo e ignora a validação do link.
       if (updatedPesquisa.link && updatedPesquisa.link.trim() !== "") {
         updateData.link = updatedPesquisa.link.trim();
       }
@@ -87,7 +83,6 @@ export default function EditPesquisaPage() {
 
       showPopup("Pesquisa atualizada com sucesso!", "success");
 
-      // Aguarda 2 segundos para exibir o popup antes de voltar
       setTimeout(() => {
         router.push("/admin/pesquisas");
       }, 2000);
@@ -104,7 +99,6 @@ export default function EditPesquisaPage() {
     return <LoadingSpinner fullScreen />;
   }
 
-  // Mostra erro de tela inteira apenas se falhar ao carregar o item inicialmente
   if (fetchError) {
     return (
       <div className="min-h-screen bg-cafta-dark flex items-center justify-center">
@@ -151,7 +145,6 @@ export default function EditPesquisaPage() {
         />
       </div>
 
-      {/* Renderizando o Popup */}
       {popup.show && (
         <FeedbackPopup
           message={popup.message}

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AcervoForm from "@/components/AcervoForm";
 
@@ -47,7 +46,6 @@ export default function UploadPage() {
               </div>
 
               <div className="bg-cafta-primary/60 border border-white/10 rounded-lg p-8">
-                {/* Aqui está o truque: Passamos a propriedade isPublic */}
                 <AcervoForm isPublic={true} />
               </div>
             </div>

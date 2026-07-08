@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { FormEvent } from "react";
+import LoadingSpinner from "./LoadingSpinner";
 
 export default function SearchFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [tipo, setTipo] = useState(searchParams.get("tipo") ?? "");
 
@@ -28,11 +30,16 @@ export default function SearchFilters() {
       params.delete("tipo");
     }
 
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 mb-8 w-full max-w-3xl">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col sm:flex-row gap-4 mb-8 w-full max-w-3xl"
+    >
       <input
         type="text"
         placeholder="Buscar arquivos por título..."
@@ -50,11 +57,13 @@ export default function SearchFilters() {
         <option value="videos">Vídeos</option>
         <option value="artigos">Artigos/Documentos</option>
       </select>
+
       <button
         type="submit"
-        className="bg-cafta-gold hover:bg-cafta-gold/90 text-white px-6 py-2.5 rounded-md text-sm font-medium transition-colors"
+        disabled={isPending}
+        className="bg-cafta-gold hover:bg-cafta-gold/90 text-white px-6 py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
       >
-        Pesquisar
+        {isPending ? <LoadingSpinner size="sm" message="" /> : "Pesquisar"}
       </button>
     </form>
   );

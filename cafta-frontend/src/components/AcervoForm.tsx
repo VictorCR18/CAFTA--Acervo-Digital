@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { AcervoFormData, AcervoItem, AcervoTipo } from "@/types";
+import type { AcervoFormData, AcervoItem } from "@/types";
 import { formatFileSize } from "@/lib/utils";
 import { UPLOAD_MAX_SIZE_MB, CATEGORIAS_ACERVO } from "@/lib/constants";
 
@@ -74,9 +74,7 @@ export default function AcervoForm({
   }
 
   const handleChange = (
-    e: ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -144,26 +142,25 @@ export default function AcervoForm({
         payload.append("arquivo", file);
       }
 
-      // Configuração para suportar arquivos e ler o progresso do upload
       const config = {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent: any) => {
           if (progressEvent.total) {
             const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+              (progressEvent.loaded * 100) / progressEvent.total,
             );
             setUploadProgress(percentCompleted);
           }
         },
       };
 
-      setUploadProgress(0); // Garante que a barra inicie vazia
+      setUploadProgress(0);
 
       const { data } = await (isUpdate
         ? api.patch(endpoint, payload, config)
         : api.post(endpoint, payload, config));
 
-      setUploadProgress(100); // Garante que mostre completo no final do processo
+      setUploadProgress(100);
 
       setUploadStatus("success");
       setUploadMessage(data.message ?? "Operação realizada com sucesso!");
@@ -364,8 +361,6 @@ export default function AcervoForm({
               <p className="mt-1 text-red-400 text-sm">{errors.categoryId}</p>
             )}
           </div>
-
-          {/* Período Histórico */}
           <div>
             <label
               htmlFor="historicalPeriod"
@@ -481,7 +476,6 @@ export default function AcervoForm({
           )}
         </div>
 
-        {/* Barra de Progresso Visível Apenas Durante o Upload */}
         {isLoading && uploadProgress > 0 && (
           <div className="w-full bg-white/10 rounded-full h-2.5 mt-2 overflow-hidden">
             <div

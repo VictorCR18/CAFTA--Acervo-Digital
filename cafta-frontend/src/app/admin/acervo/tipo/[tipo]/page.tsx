@@ -16,8 +16,6 @@ export default function AcervoTipoPage() {
   const params = useParams<{ tipo: string }>();
   const router = useRouter();
   const tipo = params.tipo as AcervoTipo;
-
-  // Estados para o modal de exclusão
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{
     id: string;
@@ -31,20 +29,18 @@ export default function AcervoTipoPage() {
   const validTipos: AcervoTipo[] = ["imagens", "videos", "artigos"];
   const isValidTipo = validTipos.includes(tipo);
 
-  // Inicia o processo de exclusão abrindo o modal
   const openDeleteModal = (item: any) => {
     setItemToDelete({ id: item.id, titulo: item.titulo });
     setIsDeleteModalOpen(true);
   };
 
-  // Executa a exclusão de fato
   const executeDelete = async () => {
     if (!itemToDelete) return;
     setIsDeleting(true);
     try {
       await api.delete(`/api/midias/${itemToDelete.id}`);
       setIsDeleteModalOpen(false);
-      window.location.reload(); // Recarrega para atualizar a lista
+      window.location.reload();
     } catch (err: any) {
       alert("Erro ao excluir item.");
     } finally {
@@ -79,12 +75,10 @@ export default function AcervoTipoPage() {
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="space-y-4">
           {items.map((item) => {
-            // Buscando a info da categoria para este item
             const categoriaInfo = CATEGORIAS_ACERVO.find(
               (c) => c.slug === item.categoryId,
             );
 
-            // Determina a cor com fallback caso a categoria não seja encontrada
             const badgeColor =
               CATEGORY_COLORS[item.categoryId] ||
               "bg-cafta-primary/40 text-white/80 border-white/10";
@@ -111,7 +105,6 @@ export default function AcervoTipoPage() {
                     {item.titulo}
                   </h3>
 
-                  {/* Container de metadados: Data + Badge da Categoria */}
                   <div className="flex items-center gap-3 mt-1">
                     <p className="text-white/60 text-xs sm:text-sm">
                       {item.dataUpload}

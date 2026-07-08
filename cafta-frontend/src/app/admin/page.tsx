@@ -74,10 +74,8 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-        {/* Main Content */}
         <div className="container mx-auto px-4 md:px-6 py-8">
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Card 1: Aprovação de Mídia */}
             <Link
               href="/admin/moderacao"
               className="group relative overflow-hidden bg-cafta-dark/50 border border-white/10 rounded-lg hover:bg-cafta-dark/70 transition-colors cursor-pointer"
@@ -104,8 +102,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-
-            {/* Card 2: Gerenciamento do Acervo */}
             <Link
               href="/admin/acervo"
               className="group relative overflow-hidden bg-cafta-dark/50 border border-white/10 rounded-lg hover:bg-cafta-dark/70 transition-colors cursor-pointer"
@@ -132,8 +128,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Link>
-
-            {/* Card 3: Gerenciamento de Pesquisas */}
             <Link
               href="/admin/pesquisas"
               className="group relative overflow-hidden bg-cafta-dark/50 border border-white/10 rounded-lg hover:bg-cafta-dark/70 transition-colors cursor-pointer"
