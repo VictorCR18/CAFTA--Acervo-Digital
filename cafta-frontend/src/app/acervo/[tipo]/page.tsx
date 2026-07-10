@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "../../../components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import api from "@/lib/api";
-import Footer from "../../../components/layout/Footer";
-import { CATEGORIAS_ACERVO } from "../../../lib/constants";
+import Footer from "@/components/layout/Footer";
+import { CATEGORIAS_ACERVO } from "@/lib/constants";
 import { LuArrowLeft } from "react-icons/lu";
-import SearchFilters from "@/components/ui/SearchFilters"; 
+import SearchFilters from "@/components/ui/SearchFilters";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
