@@ -12,7 +12,7 @@ export default function SearchFilters() {
 
   const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [tipo, setTipo] = useState(searchParams.get("tipo") ?? "");
+  const [formato, setFormato] = useState(searchParams.get("formato") ?? "");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -24,10 +24,10 @@ export default function SearchFilters() {
       params.delete("search");
     }
 
-    if (tipo) {
-      params.set("tipo", tipo);
+    if (formato) {
+      params.set("formato", formato);
     } else {
-      params.delete("tipo");
+      params.delete("formato");
     }
 
     startTransition(() => {
@@ -48,8 +48,8 @@ export default function SearchFilters() {
         className="flex-1 bg-white/5 border border-white/10 rounded-md px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cafta-gold focus:ring-1 focus:ring-cafta-gold transition-colors"
       />
       <select
-        value={tipo}
-        onChange={(e) => setTipo(e.target.value)}
+        value={formato}
+        onChange={(e) => setFormato(e.target.value)}
         className="bg-cafta-dark border border-white/10 rounded-md px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cafta-gold focus:ring-1 focus:ring-cafta-gold transition-colors appearance-none sm:w-48"
       >
         <option value="">Todos os tipos</option>

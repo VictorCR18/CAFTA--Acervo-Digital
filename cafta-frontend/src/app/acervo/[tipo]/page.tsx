@@ -23,7 +23,7 @@ interface PageProps {
   params: { tipo: string };
   searchParams: {
     search?: string;
-    tipo?: string;
+    formato?: string;
     [key: string]: string | string[] | undefined;
   };
 }
@@ -35,7 +35,7 @@ export default async function AcervoTipoPage({
   const slug = params.tipo;
   const categoriaInfo = CATEGORIAS_ACERVO.find((c) => c.slug === slug);
   const searchTerm = searchParams.search ?? "";
-  const tipoFiltro = searchParams.tipo ?? "";
+  const tipoFiltro = searchParams.formato ?? "";
 
   if (!categoriaInfo) {
     return (
@@ -50,16 +50,16 @@ export default async function AcervoTipoPage({
 
   try {
     const paramsObj = new URLSearchParams();
-    
+
     if (searchTerm) {
       paramsObj.append("search", searchTerm.trim());
     }
     if (tipoFiltro) {
       paramsObj.append("tipo", tipoFiltro);
     }
-    
+
     paramsObj.append("categoryId", slug.toLowerCase());
-    
+
     const { data: result } = await api.get(
       `/api/midias?${paramsObj.toString()}`,
     );
@@ -210,7 +210,7 @@ export default async function AcervoTipoPage({
                 <p className="text-white/40 text-sm">
                   Nenhum item encontrado com estes filtros.
                 </p>
-                {(!searchTerm && !tipoFiltro) && (
+                {!searchTerm && !tipoFiltro && (
                   <Link
                     href="/upload"
                     className="btn-cafta-outline text-xs mt-6 inline-flex"
